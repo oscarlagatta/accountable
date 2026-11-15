@@ -10,26 +10,26 @@ Accountable is a business management system: a sales CRM that will grow into a f
 
 ### Five sections
 
-- **Dashboard**, the landing page: how sales are going at a glance. Deals won and revenue won month by month, the open pipeline and its expected revenue (each deal's value times its probability of close), a sales funnel showing how much value reaches each stage, recent activity, and the follow-ups that are coming up or overdue. It should be visually stunning, with at least a line chart, a bar chart and a visual of the pipeline. Which figures each one shows, and how, is the designer's call.
+- **Dashboard**, the landing page: how sales are going at a glance. Deals won and revenue won month by month, the open pipeline and its expected revenue (each deal's value times its probability of close), a sales funnel showing how much value reaches each stage, recent activity, and the follow-ups that are coming up or overdue. It should be visually stunning, with at least a line chart, a bar chart and a visual of the pipeline. The month-by-month charts cover the last 12 months, with no date picker. Which figures each one shows, and how, is the designer's call.
 - **Organizations**: the companies we do business with. Open one to see its contacts and deals.
 - **Contacts**: the people we deal with, including leads and customers, with a filter by status. Open one to see their organization and a timeline of everything that has happened with them.
 - **Deals**: the potential sales, with each one's stage, value and close date. Open one to see its details and its timeline. A deal still open after its expected close date stands out, in the table and on its pipeline card.
-- **Pipeline**: the deals as cards on a board, one column per stage. Drag a card to another column to change the deal's stage, or within a column to change its place; a card can be dropped anywhere in a column, and it stays where it was dropped. A new deal can be added straight into a column, at that stage. The board shows the total value and expected revenue of the deals still open, each column shows its own, and the figures change as soon as a card moves.
+- **Pipeline**: the deals as cards on a board, one column per stage, all six including Won and Lost. Dragging a card to Won or Lost closes the deal. Drag a card to another column to change the deal's stage, or within a column to change its place; a card can be dropped anywhere in a column, and it stays where it was dropped. A new deal can be added straight into a column, at that stage. The board shows the total value and expected revenue of the deals still open (Won and Lost are left out of these), each column shows its own, and the figures change as soon as a card moves.
 
-Every table has a search box, columns you can sort by clicking their headings, a way to add a new record, and edit and delete on each row. That's how we add a new deal, a new lead or a new customer. Deleting asks first, and says what will happen to the records linked to the one being deleted.
+Every table has a search box, columns you can sort by clicking their headings, a way to add a new record, and edit and delete on each row. That's how we add a new deal, a new lead or a new customer. Deleting asks first, and says what will happen to the records linked to the one being deleted. Deleting an organization keeps its contacts and deals and leaves them with no organization.
 
-From any contact or deal you can log an activity (a note, call or email) and give it a follow-up date. A follow-up shows on the dashboard as a task until it's marked done. Activities can be edited and deleted too. When a deal moves to another stage, including Won or Lost, an entry such as "Moved from Proposal to Negotiation" appears in its timeline and in the dashboard's recent activity by itself.
+From any contact or deal you can log an activity (a note, call or email) and give it a follow-up date. A follow-up shows on the dashboard as a task until it's marked done. Activities can be edited and deleted too. An activity logged on a deal shows in the deal's timeline and in its main contact's timeline; one logged on a contact shows only in the contact's. When a deal moves to another stage, including Won or Lost, an entry such as "Moved from Proposal to Negotiation" appears in its timeline and in the dashboard's recent activity by itself.
 
 ### Four kinds of record
 
-- **Organization**: a company we do business with. Name, website, industry and notes. An organization has many contacts and many deals.
-- **Contact**: a person we deal with. Name, email, phone, job title, the organization they belong to, and a status (lead, qualified or customer). A lead is a contact with the lead status, so there's no separate list of leads.
-- **Deal**: a potential sale. Name, the organization and the main contact it is with, its stage (New, Qualified, Proposal, Negotiation, Won or Lost), its value in US dollars, its probability of close, and its expected or actual close date. Each stage has a usual probability of close, and a deal takes its new stage's probability when it moves; a probability set by hand is kept until the stage changes.
+- **Organization**: a company we do business with. Name, website, industry and notes. An organization has many contacts and many deals. Contacts and deals don't have to belong to one.
+- **Contact**: a person we deal with. Name, email, phone, job title, the organization they belong to, and a status (lead, qualified or customer). The status changes only when someone edits it, not when a deal is won. A lead is a contact with the lead status, so there's no separate list of leads.
+- **Deal**: a potential sale. Name, the organization and the main contact it is with, its stage (New, Qualified, Proposal, Negotiation, Won or Lost), its value in US dollars, its probability of close, and its expected or actual close date. Each stage has a usual probability of close (New 5%, Qualified 20%, Proposal 40%, Negotiation 70%, Won 100%, Lost 0%), and a deal takes its new stage's probability when it moves; a probability set by hand is kept until the stage changes.
 - **Activity**: something that happened, or needs to happen, with a contact or deal. Type (note, call or email), the contact or deal it relates to, a description and when it happened, and optionally a follow-up date and whether it's done.
 
 ### Sample data
 
-Accountable comes with realistic sample data, so every screen looks alive the first time it starts: organizations across several industries, contacts at every status, deals at every stage (including deals won and lost over the past months, deals expected to close in the months ahead and a few running late), and activities with some follow-ups due soon and some overdue.
+Accountable comes with realistic sample data, so every screen looks alive the first time it starts. It's for a small B2B services and software business, with deals of roughly $5,000 to $150,000: organizations across several industries, contacts at every status, deals at every stage (including deals won and lost over the past months, deals expected to close in the months ahead and a few running late), and activities with some follow-ups due soon and some overdue.
 
 ### Look and feel
 
@@ -38,11 +38,14 @@ The look follows Accountable's brand guidelines, which take priority over any ge
 ## Affected users and systems
 
 - One salesperson, using Accountable on their own computer every day. The rest of the sales team joins later.
+- For now it's a learning project built through the course, so the sample data is the main data. Real use is a bonus, not a goal.
 - No other systems are involved yet.
 
 ## Constraints
 
 - The technology in `docs/TECH_STACK.md`.
+- It handles one salesperson's book and stays quick with it: up to about 1,000 contacts, 500 deals and 5,000 activities. Larger volumes aren't a goal.
+- It's built at the course's pace, with no separate deadline.
 - It runs locally with one documented command that works on Mac, Linux and Windows, and needs no internet connection to use.
 - Every change is kept: it's still there after a browser refresh, and every time the app starts it shows every change made before.
 - One documented command resets the data to the sample data, to start again from scratch.
@@ -57,7 +60,8 @@ The look follows Accountable's brand guidelines, which take priority over any ge
 5. An activity or follow-up logged on a contact or deal appears in its timeline, newest first, and so does an entry for each change of stage. Follow-ups show on the dashboard as upcoming or overdue until they're marked done.
 6. The dashboard's figures match the data, and they reflect a deal marked won or a new follow-up.
 7. Every screen is sharp, modern and professional, and follows the brand. The dashboard is visually stunning, with a line chart, a bar chart and a visual of the pipeline.
-8. Before it's called done, someone has used it end to end in a real browser, the way a salesperson would: every section and every action above, each screen checked by eye, with no errors in the browser's console. Passing tests is necessary, but it isn't enough.
+8. Before it's called done, it has been used end to end in a real browser, the way a salesperson would: every section and every action above, each screen checked by eye, with no errors in the browser's console. The agent does this first and fixes what it finds. Then the project owner does it, and the MVP is done only when they say it's good to go. Passing tests is necessary, but it isn't enough.
+9. It solves the problem at the top. Starting from the dashboard, with the sample data, the project owner can answer each of these in a few clicks and without looking anywhere else: which companies we deal with, who our contacts are at a given company, what's in the sales pipeline and what it's worth, what happened last with a given customer, and what needs doing next. If any of these takes hunting around, the MVP isn't done.
 
 ## Open questions
 
