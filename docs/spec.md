@@ -1,6 +1,6 @@
 # Spec: the Accountable MVP
 
-This is the spec for the MVP described in `docs/intent.md`. It covers what the app does in detail and how it's built and designed. The stack is in `docs/TECH_STACK.md` and the look is from the brand skill (`.claude/skills/brand`).
+This is the spec for the MVP described in `docs/intent.md`. It covers what the app does in detail and how it's built and designed. The stack is in `docs/TECH_STACK.md` and the look is from the brand skill (`.claude/skills/brand`). The chosen design is mockup 2, Command: `docs/mockups/mockup-2-command.html`, with its screenshot `docs/mockups/mockup-2-command.png`. Build should match it, and where the mockup and this spec differ, this spec wins.
 
 ## Concerns
 
@@ -32,6 +32,9 @@ These are gaps or tensions found while writing the spec. Each one has a proposed
    - The contact picker in the deal form lists the deal's organization's contacts first, then everyone else.
    - The form doesn't block a mismatch.
 12. **Light mode only, but dark mode is likely next.** The colors are defined as CSS variables in one place, so dark mode can be added later without touching every component. Only the light values are filled in.
+13. **The chosen mockup has a "Search everything" box in the top bar.** The intent only asks for a search box on each table, so a search across all records would be new scope. Proposed: leave the box out of the MVP and keep the top bar's right-hand side empty. It can come back as its own change.
+14. **The chosen mockup has a "Log activity" button on the dashboard.** The intent logs activities from a contact or a deal. Proposed: keep the button, and have its form start with a picker for the contact or deal, so it still logs against one of them.
+15. **The chosen mockup shows open pipeline by stage as one strip.** R39 asked for a bar per stage. Proposed: the strip in the dashboard's top panel is the pipeline visual. Each segment's width is its stage's open value, and under it each stage has its name, count, value and expected revenue. Clicking a segment or its figures opens the pipeline board.
 
 ## Requirements
 
@@ -120,12 +123,12 @@ In the Deals table, a late deal's close date is shown in Raspberry with a "Late"
   - open follow-ups, with how many are overdue
 - R37. **Revenue won by month**: a line chart of the value of deals won, for each of the last 12 months including this one. [C7]
 - R38. **Deals won and lost by month**: a bar chart with the count won and the count lost for each of the last 12 months. [C7]
-- R39. **Pipeline by stage**: a horizontal bar for each open stage, with its value and expected revenue, in the stage colors. Clicking a stage opens the pipeline board. [C7]
+- R39. **Pipeline by stage**: a strip split into the four open stages, each segment as wide as its share of the open value, in the stage colors. Under it, each stage shows its name, deal count, value and expected revenue. Clicking a stage opens the pipeline board (Concerns 15). [C7]
 - R40. **Sales funnel**: for each stage from New to Won, the value of deals that reached it, with the share that carried on from the stage before (Concerns 4). [Intent]
 - R41. **Follow-ups**: open follow-ups, overdue first (in Raspberry), then due today, then upcoming, soonest first. Each shows the activity, the contact or deal it's on (linked) and a "Mark done" control. Marked done, it leaves the list. [C5, C6]
 - R42. **Recent activity**: the 10 latest activities and stage changes across everything, each linked to its contact or deal. [Intent]
 - R43. All figures are worked out from the database each time the dashboard opens, so they always match the data. [C6]
-- R44. With the sample data, the problem's five questions can each be answered from the dashboard in a few clicks. The sidebar has every section, and the dashboard links to records and the board. [C9]
+- R44. With the sample data, the problem's five questions can each be answered from the dashboard in a few clicks. The top bar has every section, and the dashboard links to records and the board. [C9]
 
 ### Sample data
 
@@ -285,7 +288,7 @@ The frontend refetches the affected queries after each change (TanStack Query in
 
 ## Design: how it looks
 
-Everything follows the brand skill. The look is calm and businesslike: mostly white panels on a pale page, Midnight text, and color used for meaning (stages, money, alerts), not decoration.
+Everything follows the brand skill and the chosen mockup, mockup 2 (Command). The look is businesslike and dense: a Midnight top bar, mostly white panels on a pale page, Midnight text, one Midnight feature panel on the dashboard, and color used for meaning (stages, money, alerts), not decoration.
 
 ### Tokens
 
@@ -296,7 +299,9 @@ Defined once in `frontend/src/index.css` as CSS variables. Tailwind's `@theme` e
 | `--page` | `#F0F4F5` | Page background |
 | `--panel` | `#FFFFFF` | Panels, cards, tables |
 | `--ink` | `#073B4C` | Text |
-| `--ink-muted` | `#073B4C` at 65% | Secondary text, column headings |
+| `--ink-muted` | `#073B4C` at 62% | Secondary text, column headings |
+| `--mist` | `#CDD8DB` | Text on Midnight (top bar, dashboard feature panel) |
+| `--raspberry-on-dark` | `#FF8FA8`, lightened Raspberry | Alerts on Midnight, such as overdue follow-ups in the feature panel |
 | `--line` | `#073B4C` at 8% | Row dividers inside tables only |
 | `--sea-green` | `#06D6A0` | Primary buttons (Midnight text), New |
 | `--sea-green-ink` | `#047A5A`, darkened Sea Green | Sea Green used as text on light |
@@ -314,7 +319,7 @@ The darkened text shades are checked for 4.5:1 contrast on white during Build.
 
 - Instrument Sans for everything: 14px body, 13px table cells, 600 weight for headings.
 - JetBrains Mono for money, percentages, dates and counts, with tabular figures, so columns of numbers line up.
-- Instrument Serif in one place only: the greeting line on the dashboard (for example "Good morning. Here's where sales stand.").
+- Instrument Serif isn't used on the MVP's screens. The mockup's greeting is in Instrument Sans.
 - All fonts are bundled (Concerns 2).
 
 ### Shapes
@@ -326,17 +331,21 @@ The darkened text shades are checked for 4.5:1 contrast on white during Build.
 
 ### App frame
 
-- A left sidebar, 232px, white, with the Accountable wordmark at the top and links to Dashboard, Organizations, Contacts, Deals and Pipeline, each with a Lucide icon. The current page has a pale Sea Green pill behind it.
-- The main area has a page title and the page's main action ("Add contact") on the right, then the content. It's at most 1440px wide and designed for 1280px and up.
+- A Midnight top bar, 60px high, across the full width. On the left is the Accountable mark (a Sea Green square with a Midnight center) and wordmark in white. Next to it are links to Dashboard, Organizations, Contacts, Deals and Pipeline in Sea Mist. The current page is white and 600 weight, on a pill of Sea Mist at 14%. The right-hand side is empty in the MVP (Concerns 13).
+- Below the bar, the page has a title and a short line under it, with the page's main actions on the right (for example "Add contact"), then the content. It's at most 1440px wide, with 32px side padding, and designed for 1280px and up.
 
 ### Dashboard
 
-- A greeting line in Instrument Serif, then five summary tiles in a row (R36). Each tile has a small label, a large mono figure and a short note underneath, such as "12 deals" or "4 overdue" in Raspberry.
-- Second row: the revenue-won line chart, two-thirds wide, and pipeline by stage, one-third.
-- Third row: the won-and-lost bar chart and the sales funnel, half each.
-- Fourth row: follow-ups and recent activity, half each.
-- Charts: no gridline clutter, light horizontal guides only, values in JetBrains Mono, a tooltip on hover with the exact figure in dollars. The line is Sea Green with a soft area fill (a single flat tint, not a gradient). In the bar chart, Won is Sea Green and Lost is slate.
-- The funnel is horizontal bars narrowing from New to Won, in the stage colors. Each bar has its value, and the conversion percentage sits between bars.
+- **Header**: "Good morning" (or afternoon or evening) as the title, today's date under it, and two buttons on the right: "Log activity" (Concerns 14) and "Add deal".
+- **Feature panel**: a full-width Midnight panel, 14px radius, in two parts.
+  - On the left are the summary figures (R36) in white JetBrains Mono, with Sea Mist labels. The open pipeline value is large (40px). Under it, in two pairs, are expected revenue and won this month, then win rate over 12 months and follow-ups overdue ("3 of 7"). The overdue count is in the lightened Raspberry.
+  - On the right is "Where the open value sits": the pipeline strip (R39), 44px high with 3px gaps between segments. Under it are four columns, one per open stage, each with a colored square, the stage name, its count and its value and expected revenue in mono.
+- **Charts row**: three white panels side by side. They hold revenue won by month (line), deals won and lost by month (bars, with a legend), and the sales funnel.
+- **Lists row**: follow-ups, three-fifths wide, and recent activity, two-fifths.
+  - Follow-ups is a table with a checkbox to mark done, the task, what it's on (linked, in Cerulean) and a due chip. The chip is Raspberry with "Overdue · Nov 11" when overdue, Marigold for today and plain for later dates.
+  - Recent activity is a list with a small dot per entry. Stage changes have a dot in the new stage's color and other activities a Sea Mist dot. Each entry has its description, what it's on (linked) and when, in mono.
+- **Charts**: no gridline clutter, light horizontal guides only, axis labels and values in JetBrains Mono, and a tooltip on hover with the exact figure in dollars. With three charts in a row, the month labels can show every other month. The line is Sea Green with a soft area fill (a single flat tint, not a gradient), and the latest full month's peak is labelled. In the bar chart, Won is Sea Green and Lost is slate, with 4px rounded tops.
+- **The funnel** is vertical bars from New to Won in the stage colors. Each bar's height is its value, the value sits on top in mono, and the stage name and the share carried on from the stage before sit underneath.
 
 ### Tables
 
@@ -364,11 +373,13 @@ The darkened text shades are checked for 4.5:1 contrast on white during Build.
 
 ### Pipeline board
 
-- Six columns side by side, each a pale tint of its stage color with white cards. The board scrolls sideways if the window is narrow.
-- The column header has the stage name, the count, the total value and the expected revenue in mono, and an "Add deal" button.
-- The board header shows the open total and the open expected revenue.
-- Cards: white, 10px radius, soft shadow. They show the deal name in 600 weight, the organization, the value in mono, the main contact, and the close date. A late card shows "Late" in a Raspberry pill.
-- While dragging, the card tilts slightly and lifts, and a gap opens where it will land. Totals update on drop.
+- **Page header**: the title "Pipeline", and under it the open totals in one line, such as "$806,000 open · $277,625 expected revenue · Won and Lost not counted". "Add deal" is on the right.
+- **Summary strip**: a thin strip (10px) under the header, split into the four open stages by value, in the stage colors. It changes as cards move.
+- **Columns**: six white panels side by side, 12px radius. The board scrolls sideways if the window is narrow.
+- **Column header**: a block filled with the stage color, 8px radius. It shows the stage name, a count pill, the total value and expected revenue in mono (Won and Lost show the total only) and the stage's probability ("70% likely"). Text is Midnight on Sea Green, Marigold, Coral and Lost's slate, and white on Cerulean and Won's Midnight.
+- **Cards**: filled with the page color (`#F0F4F5`) inside the white column, 8px radius, no shadow. They show the deal name in 600 weight, then the organization and main contact on one line, then the value in mono on the left and the close date on the right. A late card shows "Late" in a Raspberry pill in place of the date.
+- **Add deal**: a full-width "+ Add deal" button at the foot of each column, in the page color.
+- **Dragging**: the card being dragged turns white, tilts slightly and lifts with a stronger shadow, and a dashed gap opens where it will land. Totals and the summary strip update on drop.
 
 ### Words
 
