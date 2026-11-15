@@ -1,0 +1,20 @@
+{
+  "name": "accountable",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "e2e"
+  ],
+  "scripts": {
+    "dev": "concurrently --names api,web --prefix-colors cyan,green \"uv run uvicorn backend.app.main:app --reload --reload-dir backend --port 8000\" \"npm run dev --workspace frontend\"",
+    "seed": "uv run python -m backend.app.crm.seed",
+    "test": "npm run test:trace && npm run test:backend && npm run test:frontend && npm run test:e2e",
+    "test:trace": "node scripts/check-trace.mjs --strict",
+    "test:backend": "uv run pytest",
+    "test:frontend": "npm run test --workspace frontend",
+    "test:e2e": "npm run test --workspace e2e"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

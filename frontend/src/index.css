@@ -1,0 +1,173 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource/instrument-serif";
+@import "@fontsource-variable/jetbrains-mono";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Brand tokens. Every color in the app is defined here and nowhere else.
+  Only the light values are filled in; dark mode can redefine them under .dark later.
+*/
+:root {
+  --page: #f0f4f5;
+  --panel: #ffffff;
+  --ink: #073b4c;
+  --ink-muted: rgb(7 59 76 / 62%);
+  --ink-faint: rgb(7 59 76 / 18%);
+  --mist: #cdd8db;
+  --mist-muted: rgb(205 216 219 / 75%);
+  --mist-pill: rgb(205 216 219 / 14%);
+  --raspberry-on-dark: #ff8fa8;
+  --line: rgb(7 59 76 / 8%);
+  --hover: rgb(7 59 76 / 3%);
+  --white: #ffffff;
+  --sea-green: #06d6a0;
+  --sea-green-ink: #047a5a;
+  --marigold: #ffc145;
+  --marigold-ink: #9a6a00;
+  --coral: #f78c6b;
+  --cerulean: #118ab2;
+  --cerulean-ink: #0e7699;
+  --raspberry: #ef476f;
+  --raspberry-ink: #c8234b;
+  --won: var(--ink);
+  --lost: #8aa1a9;
+  --series-won: #06b98a;
+  --overlay: rgb(4 35 46 / 40%);
+  --count-pill-light: rgb(255 255 255 / 55%);
+  --count-pill-dark: rgb(255 255 255 / 18%);
+
+  --stage-new: var(--sea-green);
+  --stage-qualified: var(--marigold);
+  --stage-proposal: var(--coral);
+  --stage-negotiation: var(--cerulean);
+  --stage-won: var(--won);
+  --stage-lost: var(--lost);
+
+  --shadow-panel: 0 1px 2px rgb(7 59 76 / 6%), 0 4px 16px rgb(7 59 76 / 4%);
+  --shadow-lift: 0 12px 28px rgb(7 59 76 / 18%);
+
+  /* shadcn theme variables, pointed at the brand */
+  --background: var(--page);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--sea-green);
+  --primary-foreground: var(--ink);
+  --secondary: var(--panel);
+  --secondary-foreground: var(--ink);
+  --muted: var(--page);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--page);
+  --accent-foreground: var(--ink);
+  --destructive: var(--raspberry);
+  --border: var(--ink-faint);
+  --input: var(--ink-faint);
+  --ring: var(--cerulean);
+  --chart-1: var(--sea-green);
+  --chart-2: var(--marigold);
+  --chart-3: var(--coral);
+  --chart-4: var(--cerulean);
+  --chart-5: var(--raspberry);
+  --radius: 12px;
+}
+
+@theme inline {
+  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-serif: "Instrument Serif", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --color-page: var(--page);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-mist: var(--mist);
+  --color-mist-muted: var(--mist-muted);
+  --color-mist-pill: var(--mist-pill);
+  --color-raspberry-on-dark: var(--raspberry-on-dark);
+  --color-line: var(--line);
+  --color-hover: var(--hover);
+  --color-white: var(--white);
+  --color-sea-green: var(--sea-green);
+  --color-sea-green-ink: var(--sea-green-ink);
+  --color-marigold: var(--marigold);
+  --color-marigold-ink: var(--marigold-ink);
+  --color-coral: var(--coral);
+  --color-cerulean: var(--cerulean);
+  --color-cerulean-ink: var(--cerulean-ink);
+  --color-raspberry: var(--raspberry);
+  --color-raspberry-ink: var(--raspberry-ink);
+  --color-won: var(--won);
+  --color-lost: var(--lost);
+  --color-series-won: var(--series-won);
+  --color-overlay: var(--overlay);
+  --color-count-pill-light: var(--count-pill-light);
+  --color-count-pill-dark: var(--count-pill-dark);
+  --color-stage-new: var(--stage-new);
+  --color-stage-qualified: var(--stage-qualified);
+  --color-stage-proposal: var(--stage-proposal);
+  --color-stage-negotiation: var(--stage-negotiation);
+  --color-stage-won: var(--stage-won);
+  --color-stage-lost: var(--stage-lost);
+
+  --shadow-panel: var(--shadow-panel);
+  --shadow-lift: var(--shadow-lift);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: var(--radius);
+  --radius-xl: 14px;
+  --radius-2xl: 16px;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-page text-ink antialiased;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+}
