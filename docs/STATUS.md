@@ -8,4 +8,5 @@ The MVP is in design.
 - No code has been written yet.
 - Three mockups of the dashboard and pipeline are in `docs/mockups/`, each with a screenshot beside it: Ledger, Command and Focus.
 - The project owner chose mockup 2, Command, and `docs/spec.md` has been updated to match it.
-- Next: `docs/plan.md`, the build plan in phases.
+- `docs/plan.md` has the build plan in eight phases, with the files that change, the order of work, and the risks and tests.
+- Next: the project owner reviews `docs/plan.md`, then a fresh session builds the MVP from it.
