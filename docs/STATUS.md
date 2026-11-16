@@ -1,6 +1,6 @@
 # Status
 
-The MVP is built from `docs/plan.md`, phases 0 to 7. `npm test` passes: the strict traceability check, 114 pytest tests, 64 Vitest tests and 36 Playwright tests. The last step is the project owner's own walkthrough and sign-off (C8).
+The MVP is built from `docs/changes/mvp/plan.md`, phases 0 to 7. `npm test` passes: the strict traceability check, 114 pytest tests, 64 Vitest tests and 36 Playwright tests. The last step is the project owner's own walkthrough and sign-off (C8).
 
 ## Running it
 
@@ -32,6 +32,13 @@ The database is `backend/data/accountable.db`, created and seeded on first start
   - Midnight on the Lost slate (4.46:1)
 - The darkened shades pass: Sea Green ink 5.33:1, Marigold ink 4.73:1, Cerulean ink 5.16:1, Raspberry ink 5.53:1.
 
+## Docs layout
+
+`docs/spec.md` describes the whole product as it stands. Each change has its own folder, `docs/changes/<branch>/`, with its `intent.md` and `plan.md`; the MVP's are in `docs/changes/mvp/`.
+
+`npm test` fails at its first stage until `scripts/check-trace.mjs` is pointed at the new paths: it still reads `docs/intent.md` and `docs/plan.md`.
+
 ## Next
 
+- Point `scripts/check-trace.mjs` at `docs/changes/mvp/` (or at the current change's folder).
 - The project owner's walkthrough (C8, C9), then sign-off.

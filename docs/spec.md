@@ -1,63 +1,92 @@
-# Spec: the Accountable MVP
+# Spec: Accountable
 
-This is the spec for the MVP described in `docs/intent.md`. It covers what the app does in detail and how it's built and designed. The stack is in `docs/TECH_STACK.md` and the look is from the brand skill (`.claude/skills/brand`). The chosen design is mockup 2, Command: `docs/mockups/mockup-2-command.html`, with its screenshot `docs/mockups/mockup-2-command.png`. Build should match it, and where the mockup and this spec differ, this spec wins.
+This spec describes Accountable as it stands today: what it does, how it's built and how it looks. It is the authority on the product. A change is planned in its own folder under `docs/changes/`, and once it's built, this spec is updated to describe the product with the change in it.
+
+The stack is in `docs/TECH_STACK.md` and the look is from the brand skill (`.claude/skills/brand`). The design follows mockup 2, Command: `docs/mockups/mockup-2-command.html`, with its screenshot `docs/mockups/mockup-2-command.png`. Where the mockup and this spec differ, this spec wins.
+
+## Problem
+
+A small business keeps track of its customers and sales in spreadsheets, inboxes and people's heads. Nobody can see at a glance which companies we deal with, who our contacts are, what's in the sales pipeline, what happened last with a customer or what needs doing next.
+
+## The product
+
+Accountable is a business management system: a sales CRM that will grow into a full Business OS, including ERP. Today it's a complete sales CRM for one person, running on their own computer: a private Salesforce that does the everyday CRM essentials well, and feels sharp, modern and professional.
+
+It has five sections: the Dashboard (the landing page), Organizations, Contacts, Deals and the Pipeline board. It keeps four kinds of record:
+
+- **Organization**: a company we do business with. It has many contacts and many deals; contacts and deals don't have to belong to one.
+- **Contact**: a person we deal with, with a status of lead, qualified or customer. A lead is a contact with the lead status, so there's no separate list of leads. The status changes only when someone edits it, not when a deal is won.
+- **Deal**: a potential sale, with its organization, main contact, stage, value in US dollars, probability of close and expected or actual close date.
+- **Activity**: a note, call or email logged on a contact or a deal, optionally with a follow-up date that shows on the dashboard as a task until it's marked done. Stage changes are recorded as activities too.
+
+### Who uses it
+
+- One salesperson, using it on their own computer every day. The rest of the sales team joins later.
+- It's a learning project built through a course, so the sample data is the main data. Real use is a bonus.
+- No other systems are involved.
+
+### Limits
+
+- It handles one salesperson's book and stays quick with it: up to about 1,000 contacts, 500 deals and 5,000 activities.
+- It runs locally with one command on Mac, Linux and Windows, and needs no internet connection to use.
+- Every change is kept, through a browser refresh and a restart.
+- Light mode only, designed for a laptop or desktop screen.
 
 ## Concerns
 
-These are gaps or tensions found while writing the spec. Each one has a proposed answer, and the spec follows it. Change any of them before Build if they're wrong.
+Decisions on points that weren't obvious when the product was first specified, with the reason for each. Code and tests refer to them by number, such as Concerns 4, so the numbers stay fixed.
 
-1. **Deleting a contact or a deal isn't covered by the intent.** It only covers organizations. Proposed:
+1. **Deleting a contact or a deal.**
    - Deleting a contact keeps its deals and leaves them with no main contact. It deletes the activities logged on the contact.
    - Deleting a deal deletes its activities and its stage-change entries.
+   - Deleting an organization keeps its contacts and deals and leaves them with no organization.
    - The confirm dialog gives the counts, for example "2 deals will have no main contact. 5 activities will be deleted."
-2. **The fonts need the internet if they come from Google Fonts.** That breaks "needs no internet connection to use". Proposed: install the three fonts as npm packages (`@fontsource-variable/instrument-sans`, `@fontsource/instrument-serif`, `@fontsource-variable/jetbrains-mono`) and bundle them with the app. They're the same Google Fonts files.
-3. **The pipeline has six stages, but the brand has five colors.** Raspberry is also the obvious color for "late" and "overdue". Proposed:
+2. **Fonts are bundled.** Loading them from Google Fonts would need the internet, so the three fonts are npm packages (`@fontsource-variable/instrument-sans`, `@fontsource/instrument-serif`, `@fontsource-variable/jetbrains-mono`), the same files bundled with the app.
+3. **Stage colors.** The pipeline has six stages and the brand has five colors, and Raspberry is the obvious color for "late" and "overdue".
    - The four open stages use the brand order: New Sea Green, Qualified Marigold, Proposal Coral, Negotiation Cerulean.
    - Won is Midnight and Lost is a muted slate (`#8AA1A9`).
    - Raspberry is kept for things that need attention: late deals, overdue follow-ups and delete buttons.
-4. **The sales funnel needs to know how far each deal got.** A lost deal sits in Lost, so its current stage doesn't say where it dropped out. Proposed:
+4. **The sales funnel uses stage history.** A lost deal sits in Lost, so its current stage doesn't say where it dropped out.
    - The funnel counts a deal at every stage it has reached, using its stage-change entries.
    - The sample data includes stage history for every deal, so lost deals drop out at realistic stages.
    - A deal created straight into a later stage counts as having reached the stages before it.
-5. **The word "qualified" means two things.** It's a contact status and a deal stage. Both are in the intent, so the spec keeps both. Labels always say which one they mean: "Status: Qualified" on contacts, and the stage column or "Stage: Qualified" on deals.
-6. **A deal's activities follow its current main contact.** If a deal's main contact changes, the deal's activities move to the new contact's timeline. They're shown by looking up the deal's contact when the timeline is read, rather than being copied to the contact. That seems right, but it means a contact's timeline can change when a deal is edited.
-7. **The close date when a deal is won or lost.** The intent says "expected or actual close date" but not when one becomes the other. Proposed:
+5. **"Qualified" means two things**: a contact status and a deal stage. Labels always say which: "Status: Qualified" on contacts, and the stage column or "Stage: Qualified" on deals.
+6. **A deal's activities follow its current main contact.** They're shown in a contact's timeline by looking up the deal's contact when the timeline is read, rather than being copied to the contact. So a contact's timeline changes when a deal's main contact is changed.
+7. **The close date when a deal is won or lost.**
    - Moving a deal to Won or Lost sets its close date to today, unless that move happens in the edit form, where the date entered is kept.
    - Moving it back to an open stage keeps the date and leaves it for the user to edit.
    - "Revenue won by month" uses the close date of won deals.
-8. **The sample data is dated relative to the day it's created.** That way there are always follow-ups due soon and deals running late. If the app sits unused for months, the data goes stale. `npm run seed` brings it back to life. Data the user enters is never shifted.
-9. **"Today" is the computer's local date.** Overdue, late and "last 12 months" use the date on the computer the app runs on. That's correct for one person on one machine. It will need revisiting when the app is hosted (Render runs on UTC).
-10. **Stage-change entries.** They appear in timelines and recent activity like activities. Proposed: they can't be edited or deleted by hand, since they're a record of what happened, and they go when their deal is deleted.
-11. **A deal's main contact can belong to a different organization than the deal, or to none.** The intent makes both optional and doesn't link them. Proposed:
+8. **The sample data is dated relative to the day it's created**, so there are always follow-ups due soon and deals running late. If the app sits unused for months, the data goes stale, and `npm run seed` brings it back to life. Data the user enters is never shifted.
+9. **"Today" is the computer's local date.** Overdue, late and "last 12 months" use the date on the computer the app runs on. That's right for one person on one machine, and will need revisiting if the app is hosted (Render runs on UTC).
+10. **Stage-change entries are locked.** They appear in timelines and recent activity like activities, but can't be edited or deleted by hand, since they're a record of what happened. They go when their deal is deleted.
+11. **A deal's main contact can belong to a different organization than the deal, or to none.**
    - The contact picker in the deal form lists the deal's organization's contacts first, then everyone else.
    - The form doesn't block a mismatch.
-12. **Light mode only, but dark mode is likely next.** The colors are defined as CSS variables in one place, so dark mode can be added later without touching every component. Only the light values are filled in.
-13. **The chosen mockup has a "Search everything" box in the top bar.** The intent only asks for a search box on each table, so a search across all records would be new scope. Proposed: leave the box out of the MVP and keep the top bar's right-hand side empty. It can come back as its own change.
-14. **The chosen mockup has a "Log activity" button on the dashboard.** The intent logs activities from a contact or a deal. Proposed: keep the button, and have its form start with a picker for the contact or deal, so it still logs against one of them.
-15. **The chosen mockup shows open pipeline by stage as one strip.** R39 asked for a bar per stage. Proposed: the strip in the dashboard's top panel is the pipeline visual. Each segment's width is its stage's open value, and under it each stage has its name, count, value and expected revenue. Clicking a segment or its figures opens the pipeline board.
+12. **Colors are CSS variables in one place**, so dark mode can be added without touching every component. Only the light values are filled in.
+13. **No "Search everything" box.** The mockup has one in the top bar, but search is per table. The top bar's right-hand side is empty.
+14. **"Log activity" on the dashboard.** Activities belong to a contact or a deal, so the dashboard's form starts with a picker for one of them.
+15. **The dashboard's pipeline visual is one strip**, as in the mockup, in place of a bar per stage. Each segment's width is its stage's open value, and under it each stage has its name, count, value and expected revenue. Clicking a segment or its figures opens the pipeline board.
 
 ## Requirements
 
-Numbers in brackets, such as [C2], point to the intent's success criteria.
-
 ### Running it
 
-- R1. `npm run dev` starts the backend on `http://localhost:8000` and the frontend on `http://localhost:5173`, and prints the address to open. Opening it lands on the dashboard. [C1]
-- R2. If the database file doesn't exist, the backend creates it and fills it with sample data on start. [C1]
-- R3. `npm run seed` deletes the data and fills the database with fresh sample data. It works whether or not the app is running. [C2]
+- R1. `npm run dev` starts the backend on `http://localhost:8000` and the frontend on `http://localhost:5173`, and prints the address to open. Opening it lands on the dashboard.
+- R2. If the database file doesn't exist, the backend creates it and fills it with sample data on start.
+- R3. `npm run seed` deletes the data and fills the database with fresh sample data. It works whether or not the app is running.
 - R4. `npm test` runs the frontend, backend and end-to-end tests, and fails if any fail. The tests use their own database file and never touch the real one.
 - R5. Everything works with no internet connection once dependencies are installed, including fonts.
-- R6. Every change is saved in the database as soon as it's made. Nothing is kept only in the browser. [C2]
+- R6. Every change is saved in the database as soon as it's made. Nothing is kept only in the browser.
 
 ### Tables (Organizations, Contacts, Deals)
 
-- R7. Each section opens on a table of all its records. [C2]
-- R8. A search box filters the table as you type, matching any text column, case-insensitive. [C2]
-- R9. Clicking a column heading sorts by it. Clicking again reverses the order. An arrow shows the current sort. The default sort is the name, A to Z. [C2]
-- R10. An "Add" button opens a form in a side panel. Saving adds the record and shows it in the table. [C2]
-- R11. Each row has edit and delete actions. Clicking the row itself opens the record's page. [C2, C3]
-- R12. Delete asks first, in a dialog that names the record and says what happens to linked records, with counts (see Concerns 1). [C2]
-- R13. The Contacts table has a status filter with All, Lead, Qualified and Customer, which works together with the search. [C3]
+- R7. Each section opens on a table of all its records.
+- R8. A search box filters the table as you type, matching any text column, case-insensitive.
+- R9. Clicking a column heading sorts by it. Clicking again reverses the order. An arrow shows the current sort. The default sort is the name, A to Z.
+- R10. An "Add" button opens a form in a side panel. Saving adds the record and shows it in the table.
+- R11. Each row has edit and delete actions. Clicking the row itself opens the record's page.
+- R12. Delete asks first, in a dialog that names the record and says what happens to linked records, with counts (see Concerns 1).
+- R13. The Contacts table has a status filter with All, Lead, Qualified and Customer, which works together with the search.
 - R14. The tables stay quick with 1,000 rows. All rows are loaded at once and searched and sorted in the browser, with no pagination.
 
 Table columns:
@@ -68,67 +97,67 @@ Table columns:
 | Contacts | Name, Organization, Job title, Email, Phone, Status |
 | Deals | Name, Organization, Main contact, Stage, Value, Probability, Expected revenue, Close date |
 
-In the Deals table, a late deal's close date is shown in Raspberry with a "Late" label. A deal is late when it's in an open stage and its close date is before today. [Intent: Deals]
+In the Deals table, a late deal's close date is shown in Raspberry with a "Late" label. A deal is late when it's in an open stage and its close date is before today.
 
 ### Record pages
 
-- R15. **Organization page**: its details and notes, with edit and delete. It has a contacts list and a deals list, each with an "Add" that pre-fills the organization. [C3]
-- R16. **Contact page**: details, status and organization (linked), with edit and delete. It lists the contact's deals as main contact, and has a timeline. [C3]
-- R17. **Deal page**: details (stage, value, probability, expected revenue, close date, organization and main contact, both linked), with edit and delete, and a timeline. [C3]
-- R18. Every linked record name is a link to that record's page. [C3]
+- R15. **Organization page**: its details and notes, with edit and delete. It has a contacts list and a deals list, each with an "Add" that pre-fills the organization.
+- R16. **Contact page**: details, status and organization (linked), with edit and delete. It lists the contact's deals as main contact, and has a timeline.
+- R17. **Deal page**: details (stage, value, probability, expected revenue, close date, organization and main contact, both linked), with edit and delete, and a timeline.
+- R18. Every linked record name is a link to that record's page.
 
 ### Activities and timelines
 
-- R19. Contact and deal pages have a "Log activity" form with these fields: [C5]
+- R19. Contact and deal pages have a "Log activity" form with these fields:
   - type: note, call or email
   - description
   - when it happened (defaults to now)
   - an optional follow-up date
-- R20. A timeline lists entries newest first, by when they happened. [C5]
+- R20. A timeline lists entries newest first, by when they happened.
   - A contact's timeline shows its own activities and the activities of deals where it's the main contact. Those carry a link to the deal.
   - A deal's timeline shows its own activities and stage changes.
-- R21. Each activity in a timeline can be edited and deleted (delete asks first). An activity with a follow-up shows its date and a "Mark done" control. [C5]
-- R22. Changing a deal's stage creates an entry such as "Moved from Proposal to Negotiation". This happens whether the stage was changed by dragging or in the edit form. Adding a new deal into a column isn't a change, so it creates no entry. The entry appears in the deal's timeline, its main contact's timeline and the dashboard's recent activity. [C5]
+- R21. Each activity in a timeline can be edited and deleted (delete asks first). An activity with a follow-up shows its date and a "Mark done" control.
+- R22. Changing a deal's stage creates an entry such as "Moved from Proposal to Negotiation". This happens whether the stage was changed by dragging or in the edit form. Adding a new deal into a column isn't a change, so it creates no entry. The entry appears in the deal's timeline, its main contact's timeline and the dashboard's recent activity.
 
 ### Deals, stages and probability
 
-- R23. The stage probabilities are New 5%, Qualified 20%, Proposal 40%, Negotiation 70%, Won 100% and Lost 0%. A new deal gets its stage's probability. [C4]
-- R24. When the stage changes, the probability becomes the new stage's, even if it was set by hand. A probability set by hand (0 to 100, whole numbers) is kept until the stage next changes. [C4]
-- R25. Expected revenue for a deal is its value times its probability. Open means any stage except Won and Lost. [Intent]
-- R26. Values are whole US dollars, from $0 up, shown as `$45,000`. On the dashboard, large figures can be shortened, as in `$1.2M`. The currency always shows. [Brand]
+- R23. The stage probabilities are New 5%, Qualified 20%, Proposal 40%, Negotiation 70%, Won 100% and Lost 0%. A new deal gets its stage's probability.
+- R24. When the stage changes, the probability becomes the new stage's, even if it was set by hand. A probability set by hand (0 to 100, whole numbers) is kept until the stage next changes.
+- R25. Expected revenue for a deal is its value times its probability. Open means any stage except Won and Lost.
+- R26. Values are whole US dollars, from $0 up, shown as `$45,000`. On the dashboard, large figures can be shortened, as in `$1.2M`. The currency always shows.
 
 ### Pipeline board
 
-- R27. Six columns in order: New, Qualified, Proposal, Negotiation, Won, Lost. Each column shows its deal count, total value and expected revenue. [C4]
-- R28. The board's header shows the open deals' total value and expected revenue. Won and Lost are left out. [C4]
+- R27. Six columns in order: New, Qualified, Proposal, Negotiation, Won, Lost. Each column shows its deal count, total value and expected revenue.
+- R28. The board's header shows the open deals' total value and expected revenue. Won and Lost are left out.
 - R29. Each card shows:
   - the deal name, organization, value and close date
   - the main contact's name
   - a "Late" label in Raspberry when the deal is late
-  [C4]
-- R30. A card can be dragged to any position in any column, including within its own. It stays exactly where it was dropped, after a refresh and a restart. [C4]
-- R31. Dropping a card in another column changes the deal's stage and probability (R24), and adds a stage-change entry (R22). Moving to Won or Lost closes the deal and sets its close date (Concerns 7). [C4]
-- R32. Totals change the moment a card is dropped, before the server answers. If the server fails, the card goes back and a message says the move wasn't saved. [C4]
-- R33. Each column has an "Add deal" button. The new deal starts in that column at that stage's probability and goes to the top of the column. [C4]
+ 
+- R30. A card can be dragged to any position in any column, including within its own. It stays exactly where it was dropped, after a refresh and a restart.
+- R31. Dropping a card in another column changes the deal's stage and probability (R24), and adds a stage-change entry (R22). Moving to Won or Lost closes the deal and sets its close date (Concerns 7).
+- R32. Totals change the moment a card is dropped, before the server answers. If the server fails, the card goes back and a message says the move wasn't saved.
+- R33. Each column has an "Add deal" button. The new deal starts in that column at that stage's probability and goes to the top of the column.
 - R34. Clicking a card opens the deal's page.
 - R35. Dragging also works with the keyboard: Space to pick up, arrows to move, Space to drop.
 
 ### Dashboard
 
-- R36. **Summary figures** across the top: [C6, C7]
+- R36. **Summary figures** across the top:
   - open pipeline value
   - expected revenue
   - won this month
   - win rate over the last 12 months (won ÷ (won + lost), by count)
   - open follow-ups, with how many are overdue
-- R37. **Revenue won by month**: a line chart of the value of deals won, for each of the last 12 months including this one. [C7]
-- R38. **Deals won and lost by month**: a bar chart with the count won and the count lost for each of the last 12 months. [C7]
-- R39. **Pipeline by stage**: a strip split into the four open stages, each segment as wide as its share of the open value, in the stage colors. Under it, each stage shows its name, deal count, value and expected revenue. Clicking a stage opens the pipeline board (Concerns 15). [C7]
-- R40. **Sales funnel**: for each stage from New to Won, the value of deals that reached it, with the share that carried on from the stage before (Concerns 4). [Intent]
-- R41. **Follow-ups**: open follow-ups, overdue first (in Raspberry), then due today, then upcoming, soonest first. Each shows the activity, the contact or deal it's on (linked) and a "Mark done" control. Marked done, it leaves the list. [C5, C6]
-- R42. **Recent activity**: the 10 latest activities and stage changes across everything, each linked to its contact or deal. [Intent]
-- R43. All figures are worked out from the database each time the dashboard opens, so they always match the data. [C6]
-- R44. With the sample data, the problem's five questions can each be answered from the dashboard in a few clicks. The top bar has every section, and the dashboard links to records and the board. [C9]
+- R37. **Revenue won by month**: a line chart of the value of deals won, for each of the last 12 months including this one.
+- R38. **Deals won and lost by month**: a bar chart with the count won and the count lost for each of the last 12 months.
+- R39. **Pipeline by stage**: a strip split into the four open stages, each segment as wide as its share of the open value, in the stage colors. Under it, each stage shows its name, deal count, value and expected revenue. Clicking a stage opens the pipeline board (Concerns 15).
+- R40. **Sales funnel**: for each stage from New to Won, the value of deals that reached it, with the share that carried on from the stage before (Concerns 4).
+- R41. **Follow-ups**: open follow-ups, overdue first (in Raspberry), then due today, then upcoming, soonest first. Each shows the activity, the contact or deal it's on (linked) and a "Mark done" control. Marked done, it leaves the list.
+- R42. **Recent activity**: the 10 latest activities and stage changes across everything, each linked to its contact or deal.
+- R43. All figures are worked out from the database each time the dashboard opens, so they always match the data.
+- R44. With the sample data, the problem's five questions can each be answered from the dashboard in a few clicks. The top bar has every section, and the dashboard links to records and the board.
 
 ### Sample data
 
@@ -144,7 +173,7 @@ In the Deals table, a late deal's close date is shown in Raspberry with a "Late"
 
 ### Out of scope
 
-As listed in the intent: sign-in, several users, dark mode, phone layout, AI, integrations, other currencies, reports beyond the dashboard, tags, custom fields, editable stages, import and export.
+Sign-in, several users, dark mode, phone layout, AI, integrations, other currencies, reports beyond the dashboard, tags, custom fields, editable stages, import and export.
 
 ## Design: how it's built
 
@@ -200,7 +229,7 @@ e2e/
 |---|---|
 | `npm run dev` | Runs `uv run uvicorn backend.app.main:app --reload --port 8000` and `vite` together, with `concurrently` |
 | `npm run seed` | `uv run python -m backend.app.crm.seed` |
-| `npm test` | `uv run pytest`, then `vitest run` in `frontend`, then `playwright test` in `e2e` |
+| `npm test` | The traceability check (`scripts/check-trace.mjs --strict`), then `uv run pytest`, then `vitest run` in `frontend`, then `playwright test` in `e2e`, stopping at the first failure |
 
 Vite proxies `/api` to the backend, so the browser only talks to one address.
 
@@ -215,7 +244,7 @@ Vite proxies `/api` to the backend, so the browser only talks to one address.
 | Charts | shadcn/ui Chart (built on Recharts) |
 | Drag and drop | dnd-kit (`@dnd-kit/core`, `@dnd-kit/sortable`) |
 | Dialogs, menus, side panel, select | shadcn/ui (Dialog, AlertDialog, DropdownMenu, Sheet, Select) |
-| Forms and validation | shadcn/ui Form (built on React Hook Form and Zod) |
+| Forms and validation | React Hook Form and Zod, laid out with shadcn/ui Field |
 | Icons | Lucide |
 | Dates | date-fns |
 | Toasts | shadcn/ui Sonner |
@@ -295,7 +324,7 @@ The frontend refetches the affected queries after each change (TanStack Query in
   - dashboard figures checked against a small hand-made dataset
   - the seed's spread (late deals exist, overdue follow-ups exist, every stage has deals)
 - **Vitest**: money and date formatting, stage colors, the table's search and sort, the timeline's order and the forms' validation.
-- **Playwright**: one test per success criterion where it can be automated, on a freshly seeded test database:
+- **Playwright**: the whole app in Chrome, on a freshly seeded test database:
   - add, search, sort, edit and delete on each table, and check after a reload
   - drag between and within columns, and check after a reload
   - log a follow-up and see it on the dashboard
@@ -329,7 +358,7 @@ Defined once in `frontend/src/index.css` as CSS variables. Tailwind's `@theme` e
 | `--won` | `#073B4C` | Won |
 | `--lost` | `#8AA1A9` | Lost |
 
-The darkened text shades are checked for 4.5:1 contrast on white during Build.
+The darkened text shades pass 4.5:1 on white: Sea Green ink 5.33:1, Marigold ink 4.73:1, Cerulean ink 5.16:1, Raspberry ink 5.53:1. Four brand pairings fall short and are kept as the brand sets them: `--ink-muted` on white (3.95:1), white on Cerulean (3.96:1), white on Raspberry (3.62:1) and Midnight on the Lost slate (4.46:1).
 
 ### Type
 

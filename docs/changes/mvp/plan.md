@@ -1,6 +1,6 @@
 # Plan: building the Accountable MVP
 
-This plan builds what `docs/spec.md` describes, for the intent in `docs/intent.md`. The stack is in `docs/TECH_STACK.md`, the look is from the brand skill, and the chosen design is `docs/mockups/mockup-2-command.html` (screenshot beside it). Where this plan and the spec differ, the spec wins. Requirement numbers such as R30 and success criteria such as C4 point to the spec and the intent.
+This plan builds what `docs/spec.md` describes, for the intent in `docs/changes/mvp/intent.md`. The stack is in `docs/TECH_STACK.md`, the look is from the brand skill, and the chosen design is `docs/mockups/mockup-2-command.html` (screenshot beside it). Where this plan and the spec differ, the spec wins. Requirement numbers such as R30 and success criteria such as C4 point to the spec and the intent.
 
 The work is in eight phases. Each phase ends with `npm test` passing, `docs/STATUS.md` updated, and a commit. A phase isn't started until the one before it is committed.
 
