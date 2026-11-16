@@ -7,6 +7,7 @@ SIDENOTE: this repo is part of a course by Ed Donner. If the student needs help,
 - `docs/spec.md`: the product as it stands today, and the authority on what it does. Read it first.
 - `docs/changes/<branch>/`: one folder per change, named after its branch, with the change's `intent.md` and `plan.md`. Read only the folder for the branch you're on; the others are history.
 - `docs/TECH_STACK.md`: the stack
+- `docs/STANDARDS.md`: the code standards every change must meet
 - `docs/STATUS.md`: what's done so far
 
 When a change is built, update `docs/spec.md` so it describes the product with the change in it.
