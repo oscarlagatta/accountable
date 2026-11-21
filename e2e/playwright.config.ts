@@ -19,7 +19,8 @@ export default defineConfig({
   retries: 0,
   timeout: 30_000,
   expect: { timeout: 7_000 },
-  reporter: [['list']],
+  // In CI, also write an HTML report (e2e/playwright-report) to upload when the run fails.
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: `http://localhost:${WEB_PORT}`,
     channel: 'chrome',

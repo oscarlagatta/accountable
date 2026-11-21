@@ -46,6 +46,10 @@ The database is `backend/data/accountable.db`, created and seeded on first start
 
 A lefthook pre-commit hook (format, lint, types, gitleaks), and two agent hooks: `npm run check:quick` at the end of each turn, and a block on editing `.env` files. See AGENTS.md.
 
+## CI
+
+`.github/workflows/ci.yml` runs on every push to any branch: gitleaks first, then `npm run check`. If it fails, the Playwright report is uploaded. It hasn't run on GitHub yet.
+
 ## Next
 
 - The project owner's walkthrough (C8, C9), then sign-off.
