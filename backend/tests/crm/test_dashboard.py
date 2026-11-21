@@ -1,3 +1,4 @@
+import itertools
 from datetime import datetime
 
 from backend.app.core import clock
@@ -37,11 +38,25 @@ def build(make):
     make.stage_change(ids["l_oct"], "new", "qualified", datetime(2026, 9, 1, 9))
     make.stage_change(ids["l_oct"], "qualified", "lost", datetime(2026, 10, 2, 9))
     # Follow-ups
-    make.activity(contact_id=ada, description="upcoming", follow_up_date="2026-11-20", occurred_at="2026-11-10T09:00:00")
-    make.activity(deal_id=ids["n1"], description="due today", follow_up_date="2026-11-15", occurred_at="2026-11-09T09:00:00")
-    make.activity(contact_id=ada, description="overdue late", follow_up_date="2026-11-12", occurred_at="2026-11-08T09:00:00")
-    make.activity(deal_id=ids["g1"], description="overdue early", follow_up_date="2026-11-02", occurred_at="2026-11-01T09:00:00")
-    make.activity(contact_id=ada, description="done one", follow_up_date="2026-11-01", done=True, occurred_at="2026-10-30T09:00:00")
+    make.activity(
+        contact_id=ada, description="upcoming", follow_up_date="2026-11-20", occurred_at="2026-11-10T09:00:00"
+    )
+    make.activity(
+        deal_id=ids["n1"], description="due today", follow_up_date="2026-11-15", occurred_at="2026-11-09T09:00:00"
+    )
+    make.activity(
+        contact_id=ada, description="overdue late", follow_up_date="2026-11-12", occurred_at="2026-11-08T09:00:00"
+    )
+    make.activity(
+        deal_id=ids["g1"], description="overdue early", follow_up_date="2026-11-02", occurred_at="2026-11-01T09:00:00"
+    )
+    make.activity(
+        contact_id=ada,
+        description="done one",
+        follow_up_date="2026-11-01",
+        done=True,
+        occurred_at="2026-10-30T09:00:00",
+    )
     return ids
 
 
@@ -79,8 +94,20 @@ def test_months_across_a_year_change_and_month_end(client, make):
     make.deal("lost", value=3000, close_date="2025-12-31")
     d = dash(client)
     months = d["months"]
-    assert [m["month"] for m in months] == ["2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08",
-                                            "2025-09", "2025-10", "2025-11", "2025-12", "2026-01"]
+    assert [m["month"] for m in months] == [
+        "2025-02",
+        "2025-03",
+        "2025-04",
+        "2025-05",
+        "2025-06",
+        "2025-07",
+        "2025-08",
+        "2025-09",
+        "2025-10",
+        "2025-11",
+        "2025-12",
+        "2026-01",
+    ]
     assert [m["label"] for m in months][-2:] == ["Dec", "Jan"]
     assert months[0]["won_value"] == 1000
     assert months[-1]["won_value"] == 3000
@@ -115,7 +142,7 @@ def test_funnel(client, make):
     ]
     assert funnel[0]["share"] is None
     assert funnel[1]["share"] == round(funnel[1]["value"] / funnel[0]["value"] * 100)
-    assert all(a["value"] >= b["value"] for a, b in zip(funnel, funnel[1:]))
+    assert all(a["value"] >= b["value"] for a, b in itertools.pairwise(funnel))
 
 
 def test_follow_up_order(client, make):
@@ -123,7 +150,11 @@ def test_follow_up_order(client, make):
     build(make)
     fu = dash(client)["follow_ups"]
     assert [(f["description"], f["status"]) for f in fu] == [
-        ("overdue early", "overdue"), ("overdue late", "overdue"), ("due today", "today"), ("upcoming", "upcoming")]
+        ("overdue early", "overdue"),
+        ("overdue late", "overdue"),
+        ("due today", "today"),
+        ("upcoming", "upcoming"),
+    ]
     assert fu[1]["contact_name"] == "Ada Lane"
     assert fu[0]["deal_id"] is not None and fu[0]["deal_name"]
 
@@ -144,7 +175,10 @@ def test_figures_change_straight_away(client, make):
     ids = build(make)
     before = dash(client)["summary"]
     client.post(f"/api/deals/{ids['g1']}/move", json={"stage": "won", "index": 0})
-    client.post("/api/activities", json={"kind": "call", "deal_id": ids["n1"], "description": "Call back", "follow_up_date": "2026-11-18"})
+    client.post(
+        "/api/activities",
+        json={"kind": "call", "deal_id": ids["n1"], "description": "Call back", "follow_up_date": "2026-11-18"},
+    )
     after = dash(client)
     s = after["summary"]
     assert s["won_this_month"] == before["won_this_month"] + 40000

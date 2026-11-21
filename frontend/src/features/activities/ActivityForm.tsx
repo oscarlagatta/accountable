@@ -12,7 +12,14 @@ import { useContacts } from '@/features/contacts/api'
 import { useDeals } from '@/features/deals/api'
 import { toLocalInput } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { ACTIVITY_KINDS, useLogActivity, useUpdateActivity, type ActivityKind, type TimelineEntry, type TimelineOwner } from './api'
+import {
+  ACTIVITY_KINDS,
+  useLogActivity,
+  useUpdateActivity,
+  type ActivityKind,
+  type TimelineEntry,
+  type TimelineOwner,
+} from './api'
 
 export const activitySchema = z
   .object({
@@ -26,13 +33,31 @@ export const activitySchema = z
   .refine((v) => !v.needsTarget || Boolean(v.target), { path: ['target'], message: 'Choose a contact or a deal' })
 type Values = z.infer<typeof activitySchema>
 
-function TargetPicker({ value, onChange, invalid }: { value: string | null; onChange: (v: string | null) => void; invalid: boolean }) {
+function TargetPicker({
+  value,
+  onChange,
+  invalid,
+}: {
+  value: string | null
+  onChange: (v: string | null) => void
+  invalid: boolean
+}) {
   const contacts = useContacts()
   const deals = useDeals()
   const options = useMemo<PickerOption[]>(
     () => [
-      ...(contacts.data ?? []).map((c) => ({ value: `contact:${c.id}`, label: c.name, detail: c.organization_name, group: 'Contacts' })),
-      ...(deals.data ?? []).map((d) => ({ value: `deal:${d.id}`, label: d.name, detail: d.organization_name, group: 'Deals' })),
+      ...(contacts.data ?? []).map((c) => ({
+        value: `contact:${c.id}`,
+        label: c.name,
+        detail: c.organization_name,
+        group: 'Contacts',
+      })),
+      ...(deals.data ?? []).map((d) => ({
+        value: `deal:${d.id}`,
+        label: d.name,
+        detail: d.organization_name,
+        group: 'Deals',
+      })),
     ],
     [contacts.data, deals.data],
   )
@@ -117,10 +142,21 @@ export function ActivityForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-3" aria-label={activity ? 'Edit activity' : 'Log activity'}>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      noValidate
+      className="flex flex-col gap-3"
+      aria-label={activity ? 'Edit activity' : 'Log activity'}
+    >
       {pickTarget ? (
         <FormRow id="activity-target" label="On" error={errors.target?.message}>
-          <Controller control={control} name="target" render={({ field }) => <TargetPicker value={field.value} onChange={field.onChange} invalid={!!errors.target} />} />
+          <Controller
+            control={control}
+            name="target"
+            render={({ field }) => (
+              <TargetPicker value={field.value} onChange={field.onChange} invalid={!!errors.target} />
+            )}
+          />
         </FormRow>
       ) : null}
       <Controller
@@ -147,14 +183,30 @@ export function ActivityForm({
         )}
       />
       <FormRow id={`${idp}-description`} label="What happened" error={errors.description?.message}>
-        <Textarea id={`${idp}-description`} rows={compact ? 2 : 3} placeholder="Called about the renewal" aria-invalid={!!errors.description} {...register('description')} />
+        <Textarea
+          id={`${idp}-description`}
+          rows={compact ? 2 : 3}
+          placeholder="Called about the renewal"
+          aria-invalid={!!errors.description}
+          {...register('description')}
+        />
       </FormRow>
       <div className="grid grid-cols-2 gap-3">
         <FormRow id={`${idp}-when`} label="When" error={errors.occurred_at?.message}>
-          <Input id={`${idp}-when`} type="datetime-local" className="font-mono text-[13px]" {...register('occurred_at')} />
+          <Input
+            id={`${idp}-when`}
+            type="datetime-local"
+            className="font-mono text-[13px]"
+            {...register('occurred_at')}
+          />
         </FormRow>
         <FormRow id={`${idp}-follow-up`} label="Follow-up date" optional>
-          <Input id={`${idp}-follow-up`} type="date" className="font-mono text-[13px]" {...register('follow_up_date')} />
+          <Input
+            id={`${idp}-follow-up`}
+            type="date"
+            className="font-mono text-[13px]"
+            {...register('follow_up_date')}
+          />
         </FormRow>
       </div>
       {formError ? <p className="text-[13px] text-raspberry-ink">{formError}</p> : null}

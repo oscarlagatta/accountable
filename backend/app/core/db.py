@@ -2,8 +2,10 @@
 
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Annotated
 
-from sqlalchemy import Connection, Engine, MetaData, create_engine, event
+from fastapi import Depends
+from sqlalchemy import Connection, CursorResult, Engine, MetaData, create_engine, event
 
 from . import settings
 
@@ -48,3 +50,15 @@ def get_conn() -> Iterator[Connection]:
     """FastAPI dependency: one connection and one transaction per request."""
     with get_engine().begin() as conn:
         yield conn
+
+
+DbConn = Annotated[Connection, Depends(get_conn)]
+"""Router parameter type for the request's connection."""
+
+
+def inserted_id(result: CursorResult) -> int:
+    """The primary key of the row a single-row insert just added."""
+    key = result.inserted_primary_key
+    if key is None:
+        raise RuntimeError("The insert did not return a primary key")
+    return key[0]

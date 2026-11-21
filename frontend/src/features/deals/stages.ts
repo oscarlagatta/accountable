@@ -16,9 +16,24 @@ type StageStyle = {
 
 const STYLES: Record<StageKey, StageStyle> = {
   new: { token: 'var(--stage-new)', fill: 'bg-stage-new text-ink', bg: 'bg-stage-new', lightText: false },
-  qualified: { token: 'var(--stage-qualified)', fill: 'bg-stage-qualified text-ink', bg: 'bg-stage-qualified', lightText: false },
-  proposal: { token: 'var(--stage-proposal)', fill: 'bg-stage-proposal text-ink', bg: 'bg-stage-proposal', lightText: false },
-  negotiation: { token: 'var(--stage-negotiation)', fill: 'bg-stage-negotiation text-white', bg: 'bg-stage-negotiation', lightText: true },
+  qualified: {
+    token: 'var(--stage-qualified)',
+    fill: 'bg-stage-qualified text-ink',
+    bg: 'bg-stage-qualified',
+    lightText: false,
+  },
+  proposal: {
+    token: 'var(--stage-proposal)',
+    fill: 'bg-stage-proposal text-ink',
+    bg: 'bg-stage-proposal',
+    lightText: false,
+  },
+  negotiation: {
+    token: 'var(--stage-negotiation)',
+    fill: 'bg-stage-negotiation text-white',
+    bg: 'bg-stage-negotiation',
+    lightText: true,
+  },
   won: { token: 'var(--stage-won)', fill: 'bg-stage-won text-white', bg: 'bg-stage-won', lightText: true },
   lost: { token: 'var(--stage-lost)', fill: 'bg-stage-lost text-ink', bg: 'bg-stage-lost', lightText: false },
 }

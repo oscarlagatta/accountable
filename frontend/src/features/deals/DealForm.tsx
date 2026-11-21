@@ -30,7 +30,12 @@ type Values = z.infer<typeof dealSchema>
 
 /** The organization's contacts first, then everyone else (Concerns 11). */
 export function contactOptions(contacts: ContactRow[], organizationId: number | null): PickerOption[] {
-  const option = (c: ContactRow, group: string): PickerOption => ({ value: String(c.id), label: c.name, detail: c.organization_name, group })
+  const option = (c: ContactRow, group: string): PickerOption => ({
+    value: String(c.id),
+    label: c.name,
+    detail: c.organization_name,
+    group,
+  })
   if (organizationId === null) return contacts.map((c) => option(c, ''))
   const at = contacts.filter((c) => c.organization_id === organizationId)
   const rest = contacts.filter((c) => c.organization_id !== organizationId)
@@ -42,6 +47,45 @@ function probabilityFor(stages: Stage[] | undefined, key: string) {
   return stages?.find((s) => s.key === key)?.probability
 }
 
+type Defaults = { stage?: StageKey; organization_id?: number | null; contact_id?: number | null }
+
+const toField = (n: number | null | undefined) => (n === null || n === undefined ? null : String(n))
+
+/** The form's starting values: the deal being edited, or a new deal with the given defaults. */
+function initialStageOf(deal: Deal | undefined, defaults: Defaults | undefined): StageKey {
+  return deal?.stage ?? defaults?.stage ?? 'new'
+}
+
+function initialProbability(deal: Deal | undefined, stages: Stage[] | undefined, stage: StageKey) {
+  const probability = deal?.probability ?? probabilityFor(stages, stage)
+  return probability === undefined ? '' : String(probability)
+}
+
+function initialValues(deal: Deal | undefined, defaults: Defaults | undefined, stages: Stage[] | undefined): Values {
+  const stage = initialStageOf(deal, defaults)
+  return {
+    name: deal?.name ?? '',
+    organization_id: toField(deal ? deal.organization_id : defaults?.organization_id),
+    contact_id: toField(deal ? deal.contact_id : defaults?.contact_id),
+    stage,
+    value: deal ? String(deal.value) : '',
+    probability: initialProbability(deal, stages, stage),
+    close_date: deal?.close_date ?? '',
+  }
+}
+
+function toInput(v: Values): DealInput {
+  return {
+    name: v.name,
+    organization_id: v.organization_id ? Number(v.organization_id) : null,
+    contact_id: v.contact_id ? Number(v.contact_id) : null,
+    stage: v.stage,
+    value: Number(v.value),
+    probability: Number(v.probability),
+    close_date: v.close_date,
+  }
+}
+
 export function DealForm({
   deal,
   defaults,
@@ -50,7 +94,7 @@ export function DealForm({
   onCancel,
 }: {
   deal?: Deal
-  defaults?: { stage?: StageKey; organization_id?: number | null; contact_id?: number | null }
+  defaults?: Defaults
   /** Adding from a pipeline column: the stage is that column's. */
   lockStage?: boolean
   onSaved: (d: Deal) => void
@@ -61,22 +105,14 @@ export function DealForm({
   const orgs = useOrganizations()
   const contacts = useContacts()
   const [formError, setFormError] = useState<string | null>(null)
-  const initialStage = deal?.stage ?? defaults?.stage ?? 'new'
-  const initialProbability = deal?.probability ?? probabilityFor(stages.data, initialStage)
-  const toField = (n: number | null | undefined) => (n === null || n === undefined ? null : String(n))
+  const initialStage = initialStageOf(deal, defaults)
 
-  const { register, handleSubmit, setError, setValue, control, formState } = useForm<Values>({
+  const { register, handleSubmit, setError, setValue, setFocus, control, formState } = useForm<Values>({
     resolver: zodResolver(dealSchema),
-    defaultValues: {
-      name: deal?.name ?? '',
-      organization_id: toField(deal ? deal.organization_id : defaults?.organization_id),
-      contact_id: toField(deal ? deal.contact_id : defaults?.contact_id),
-      stage: initialStage,
-      value: deal ? String(deal.value) : '',
-      probability: initialProbability === undefined ? '' : String(initialProbability),
-      close_date: deal?.close_date ?? '',
-    },
+    defaultValues: initialValues(deal, defaults, stages.data),
   })
+  // The name field takes focus when the form opens.
+  useEffect(() => setFocus('name'), [setFocus])
   const errors = formState.errors
   const orgId = useWatch({ control, name: 'organization_id' })
   const probability = useWatch({ control, name: 'probability' })
@@ -91,20 +127,18 @@ export function DealForm({
     if (p !== undefined) setValue('probability', String(p))
   }, [stages.data, initialStage, setValue])
 
-  const orgOptions = useMemo(() => (orgs.data ?? []).map((o) => ({ value: String(o.id), label: o.name, detail: o.industry })), [orgs.data])
-  const peopleOptions = useMemo(() => contactOptions(contacts.data ?? [], orgId ? Number(orgId) : null), [contacts.data, orgId])
+  const orgOptions = useMemo(
+    () => (orgs.data ?? []).map((o) => ({ value: String(o.id), label: o.name, detail: o.industry })),
+    [orgs.data],
+  )
+  const peopleOptions = useMemo(
+    () => contactOptions(contacts.data ?? [], orgId ? Number(orgId) : null),
+    [contacts.data, orgId],
+  )
 
   async function onSubmit(v: Values) {
     setFormError(null)
-    const data: DealInput = {
-      name: v.name,
-      organization_id: v.organization_id ? Number(v.organization_id) : null,
-      contact_id: v.contact_id ? Number(v.contact_id) : null,
-      stage: v.stage,
-      value: Number(v.value),
-      probability: Number(v.probability),
-      close_date: v.close_date,
-    }
+    const data = toInput(v)
     try {
       onSaved(await save.mutateAsync({ id: deal?.id, data }))
     } catch (e) {
@@ -115,14 +149,22 @@ export function DealForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
       <FormRow id="deal-name" label="Name" error={errors.name?.message}>
-        <Input id="deal-name" autoFocus aria-invalid={!!errors.name} {...register('name')} />
+        <Input id="deal-name" aria-invalid={!!errors.name} {...register('name')} />
       </FormRow>
       <FormRow id="deal-org" label="Organization" optional>
         <Controller
           control={control}
           name="organization_id"
           render={({ field }) => (
-            <RecordPicker id="deal-org" value={field.value} onChange={field.onChange} options={orgOptions} placeholder="No organization" noneLabel="No organization" searchPlaceholder="Search organizations" />
+            <RecordPicker
+              id="deal-org"
+              value={field.value}
+              onChange={field.onChange}
+              options={orgOptions}
+              placeholder="No organization"
+              noneLabel="No organization"
+              searchPlaceholder="Search organizations"
+            />
           )}
         />
       </FormRow>
@@ -131,7 +173,15 @@ export function DealForm({
           control={control}
           name="contact_id"
           render={({ field }) => (
-            <RecordPicker id="deal-contact" value={field.value} onChange={field.onChange} options={peopleOptions} placeholder="No main contact" noneLabel="No main contact" searchPlaceholder="Search contacts" />
+            <RecordPicker
+              id="deal-contact"
+              value={field.value}
+              onChange={field.onChange}
+              options={peopleOptions}
+              placeholder="No main contact"
+              noneLabel="No main contact"
+              searchPlaceholder="Search contacts"
+            />
           )}
         />
       </FormRow>
@@ -165,15 +215,35 @@ export function DealForm({
           />
         </FormRow>
         <FormRow id="deal-probability" label="Probability (%)" error={errors.probability?.message}>
-          <Input id="deal-probability" inputMode="numeric" className="font-mono" aria-invalid={!!errors.probability} {...register('probability')} />
+          <Input
+            id="deal-probability"
+            inputMode="numeric"
+            className="font-mono"
+            aria-invalid={!!errors.probability}
+            {...register('probability')}
+          />
         </FormRow>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <FormRow id="deal-value" label="Value ($)" error={errors.value?.message}>
-          <Input id="deal-value" inputMode="numeric" className="font-mono" placeholder="45000" aria-invalid={!!errors.value} {...register('value')} />
+          <Input
+            id="deal-value"
+            inputMode="numeric"
+            className="font-mono"
+            placeholder="45000"
+            aria-invalid={!!errors.value}
+            {...register('value')}
+          />
         </FormRow>
         <FormRow id="deal-close" label="Close date" error={errors.close_date?.message}>
-          <Input id="deal-close" type="date" className="font-mono" min="2000-01-01" aria-invalid={!!errors.close_date} {...register('close_date')} />
+          <Input
+            id="deal-close"
+            type="date"
+            className="font-mono"
+            min="2000-01-01"
+            aria-invalid={!!errors.close_date}
+            {...register('close_date')}
+          />
         </FormRow>
       </div>
       {formError ? <p className="text-[13px] text-raspberry-ink">{formError}</p> : null}

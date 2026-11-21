@@ -54,7 +54,10 @@ export function RecordPicker({
           role="combobox"
           aria-expanded={open}
           aria-invalid={invalid || undefined}
-          className={cn('h-9 w-full justify-between rounded-md bg-panel px-3 font-normal', !selected && 'text-ink-muted')}
+          className={cn(
+            'h-9 w-full justify-between rounded-md bg-panel px-3 font-normal',
+            !selected && 'text-ink-muted',
+          )}
         >
           <span className="truncate">{selected ? selected.label : placeholder}</span>
           <ChevronsUpDown className="size-4 opacity-50" />

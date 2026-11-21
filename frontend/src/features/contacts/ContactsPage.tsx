@@ -8,7 +8,14 @@ import { RecordLink } from '@/components/RecordLayout'
 import { RecordSheet } from '@/components/RecordSheet'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { CONTACT_STATUSES, contactDeletePreview, useContacts, useDeleteContact, type ContactRow, type ContactStatus } from './api'
+import {
+  CONTACT_STATUSES,
+  contactDeletePreview,
+  useContacts,
+  useDeleteContact,
+  type ContactRow,
+  type ContactStatus,
+} from './api'
 import { ContactForm } from './ContactForm'
 import { StatusBadge } from './StatusBadge'
 
@@ -53,7 +60,10 @@ export function ContactsPage() {
   const [editing, setEditing] = useState<ContactRow | 'new' | null>(null)
   const [deleting, setDeleting] = useState<ContactRow | null>(null)
 
-  const rows = useMemo(() => (contacts.data ?? []).filter((c) => filter === 'all' || c.status === filter), [contacts.data, filter])
+  const rows = useMemo(
+    () => (contacts.data ?? []).filter((c) => filter === 'all' || c.status === filter),
+    [contacts.data, filter],
+  )
   const columns = useMemo<Column<ContactRow>[]>(
     () => [
       { id: 'name', header: 'Name', value: (r) => r.name, cell: (r) => <span className="font-medium">{r.name}</span> },
@@ -61,19 +71,37 @@ export function ContactsPage() {
         id: 'organization',
         header: 'Organization',
         value: (r) => r.organization_name,
-        cell: (r) => (r.organization_id ? <RecordLink to={`/organizations/${r.organization_id}`}>{r.organization_name}</RecordLink> : <span className="text-ink-muted">None</span>),
+        cell: (r) =>
+          r.organization_id ? (
+            <RecordLink to={`/organizations/${r.organization_id}`}>{r.organization_name}</RecordLink>
+          ) : (
+            <span className="text-ink-muted">None</span>
+          ),
       },
       { id: 'job_title', header: 'Job title', value: (r) => r.job_title },
       { id: 'email', header: 'Email', value: (r) => r.email, className: 'text-ink-muted' },
       { id: 'phone', header: 'Phone', value: (r) => r.phone, className: 'font-mono text-xs text-ink-muted' },
-      { id: 'status', header: 'Status', value: (r) => r.status, searchable: false, cell: (r) => <StatusBadge status={r.status} /> },
+      {
+        id: 'status',
+        header: 'Status',
+        value: (r) => r.status,
+        searchable: false,
+        cell: (r) => <StatusBadge status={r.status} />,
+      },
     ],
     [],
   )
 
   return (
     <Page>
-      <PageHeader title="Contacts" subtitle={contacts.data ? `${plural(contacts.data.length, 'person', 'people')}: leads, qualified contacts and customers` : 'Loading…'} />
+      <PageHeader
+        title="Contacts"
+        subtitle={
+          contacts.data
+            ? `${plural(contacts.data.length, 'person', 'people')}: leads, qualified contacts and customers`
+            : 'Loading…'
+        }
+      />
       <DataTable
         data={rows}
         columns={columns}
@@ -81,7 +109,13 @@ export function ContactsPage() {
         rowHref={(r) => `/contacts/${r.id}`}
         onEdit={setEditing}
         onDelete={setDeleting}
-        emptyText={contacts.isLoading ? 'Loading…' : filter === 'all' ? 'No contacts yet. Add the first one.' : 'No contacts with this status.'}
+        emptyText={
+          contacts.isLoading
+            ? 'Loading…'
+            : filter === 'all'
+              ? 'No contacts yet. Add the first one.'
+              : 'No contacts with this status.'
+        }
         toolbar={
           <>
             <StatusFilter value={filter} onChange={setFilter} />
@@ -91,7 +125,11 @@ export function ContactsPage() {
           </>
         }
       />
-      <RecordSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={editing === 'new' ? 'Add contact' : 'Edit contact'}>
+      <RecordSheet
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title={editing === 'new' ? 'Add contact' : 'Edit contact'}
+      >
         {editing !== null ? (
           <ContactForm
             contact={editing === 'new' ? undefined : editing}

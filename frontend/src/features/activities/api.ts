@@ -39,7 +39,8 @@ export type ActivityPatch = Partial<Omit<ActivityInput, 'contact_id' | 'deal_id'
 
 export type TimelineOwner = { kind: 'contact' | 'deal'; id: number }
 
-export const timelineKey = (owner: TimelineOwner) => [owner.kind === 'contact' ? 'contacts' : 'deals', owner.id, 'timeline'] as const
+export const timelineKey = (owner: TimelineOwner) =>
+  [owner.kind === 'contact' ? 'contacts' : 'deals', owner.id, 'timeline'] as const
 
 export function useTimeline(owner: TimelineOwner) {
   return useQuery({
@@ -60,7 +61,8 @@ export function useLogActivity() {
 export function useUpdateActivity() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ActivityPatch }) => api.patch<TimelineEntry>(`/activities/${id}`, data),
+    mutationFn: ({ id, data }: { id: number; data: ActivityPatch }) =>
+      api.patch<TimelineEntry>(`/activities/${id}`, data),
     onSuccess: () => refreshAfterChange(qc),
   })
 }

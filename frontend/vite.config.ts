@@ -16,9 +16,26 @@ export default defineConfig({
   // after discovering a dependency late.
   optimizeDeps: {
     include: [
-      'react', 'react-dom', 'react-dom/client', 'react-router', '@tanstack/react-query', '@tanstack/react-table',
-      '@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities', 'recharts', 'react-hook-form', '@hookform/resolvers/zod',
-      'zod', 'lucide-react', 'date-fns', 'sonner', 'radix-ui', 'cmdk', 'class-variance-authority', 'cn',
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react-router',
+      '@tanstack/react-query',
+      '@tanstack/react-table',
+      '@dnd-kit/core',
+      '@dnd-kit/sortable',
+      '@dnd-kit/utilities',
+      'recharts',
+      'react-hook-form',
+      '@hookform/resolvers/zod',
+      'zod',
+      'lucide-react',
+      'date-fns',
+      'sonner',
+      'radix-ui',
+      'cmdk',
+      'class-variance-authority',
+      'cn',
     ],
   },
   server: {
@@ -35,5 +52,11 @@ export default defineConfig({
     css: false,
     restoreMocks: true,
     unstubGlobals: true,
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**'],
+      thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
+    },
   },
 })

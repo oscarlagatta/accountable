@@ -3,6 +3,7 @@
 from sqlalchemy import Connection, delete, func, insert, select, update
 
 from backend.app.core import clock
+from backend.app.core.db import inserted_id
 from backend.app.core.errors import FieldError, NotFound
 
 from .. import stages
@@ -53,8 +54,13 @@ def get_organization(conn: Connection, org_id: int) -> dict:
     org = _require(conn, org_id)
     people = conn.execute(
         select(
-            contacts.c.id, contacts.c.first_name, contacts.c.last_name, contacts.c.email, contacts.c.phone,
-            contacts.c.job_title, contacts.c.status,
+            contacts.c.id,
+            contacts.c.first_name,
+            contacts.c.last_name,
+            contacts.c.email,
+            contacts.c.phone,
+            contacts.c.job_title,
+            contacts.c.status,
         )
         .where(contacts.c.organization_id == org_id)
         .order_by(func.lower(contacts.c.first_name), func.lower(contacts.c.last_name))
@@ -66,9 +72,9 @@ def get_organization(conn: Connection, org_id: int) -> dict:
 
 def create_organization(conn: Connection, data: OrganizationIn) -> dict:
     stamp = clock.now().isoformat()
-    new_id = conn.execute(
-        insert(organizations).values(**data.model_dump(), created_at=stamp, updated_at=stamp)
-    ).inserted_primary_key[0]
+    new_id = inserted_id(
+        conn.execute(insert(organizations).values(**data.model_dump(), created_at=stamp, updated_at=stamp))
+    )
     return get_organization(conn, new_id)
 
 
@@ -79,7 +85,9 @@ def update_organization(conn: Connection, org_id: int, data: OrganizationPatch) 
         raise FieldError({"name": "Required"})
     if values:
         conn.execute(
-            update(organizations).where(organizations.c.id == org_id).values(**values, updated_at=clock.now().isoformat())
+            update(organizations)
+            .where(organizations.c.id == org_id)
+            .values(**values, updated_at=clock.now().isoformat())
         )
     return get_organization(conn, org_id)
 

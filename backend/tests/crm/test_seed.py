@@ -1,3 +1,4 @@
+import itertools
 from collections import Counter
 from datetime import date, datetime, timedelta
 
@@ -39,7 +40,7 @@ def test_deals_spread(engine):
     """[R48, R45] Every stage has deals, values $5,000 to $150,000, a few late, a couple with no organization."""
     seed.reset(engine)
     ds = rows(engine, deals)
-    assert set(d["stage"] for d in ds) == set(stages.KEYS)
+    assert {d["stage"] for d in ds} == set(stages.KEYS)
     assert all(5000 <= d["value"] <= 150000 for d in ds)
     today = TODAY.isoformat()
     late = [d for d in ds if d["stage"] in stages.OPEN_KEYS and d["close_date"] < today]
@@ -80,9 +81,12 @@ def test_every_deal_has_a_stage_history(engine):
             continue
         assert history, d
         assert history[-1]["to_stage"] == d["stage"]
-        for prev, nxt in zip(history, history[1:]):
+        for prev, nxt in itertools.pairwise(history):
             assert prev["to_stage"] == nxt["from_stage"]
-        assert history[0]["description"] == f"Moved from {stages.label(history[0]['from_stage'])} to {stages.label(history[0]['to_stage'])}"
+        assert (
+            history[0]["description"]
+            == f"Moved from {stages.label(history[0]['from_stage'])} to {stages.label(history[0]['to_stage'])}"
+        )
     # Lost deals drop out at several different stages.
     dropped = {by_deal[d["id"]][-1]["from_stage"] for d in rows(engine, deals) if d["stage"] == "lost"}
     assert len(dropped) >= 3
@@ -92,7 +96,7 @@ def test_dates_are_relative_to_today(engine):
     """[R45, K8] Moving today moves every sample date by the same amount, and nothing happens in the future."""
     first = seed.generate(TODAY, datetime(2026, 11, 15, 10, 30))
     later = seed.generate(TODAY + timedelta(days=100), datetime(2027, 2, 23, 10, 30))
-    shift = lambda s: (date.fromisoformat(s) + timedelta(days=100)).isoformat()  # noqa: E731
+    shift = lambda s: (date.fromisoformat(s) + timedelta(days=100)).isoformat()
     # Deals won this month are placed within the current calendar month, so they're left out here.
     pairs = [(a, b) for a, b in zip(first["deals"], later["deals"]) if not a["close_date"].startswith("2026-11")]
     assert len(pairs) > 60

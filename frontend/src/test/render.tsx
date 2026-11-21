@@ -10,7 +10,10 @@ export function LocationProbe() {
 }
 
 /** Renders with a fresh query client and a router at `path` (matched by `route`). */
-export function renderWithProviders(ui: ReactElement, { path = '/', route = '*' }: { path?: string; route?: string } = {}) {
+export function renderWithProviders(
+  ui: ReactElement,
+  { path = '/', route = '*' }: { path?: string; route?: string } = {},
+) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   const result = render(
     <QueryClientProvider client={client}>

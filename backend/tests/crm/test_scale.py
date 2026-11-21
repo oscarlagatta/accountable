@@ -32,7 +32,9 @@ def test_scale_volumes(scale_client):
     assert len(scale_client.get("/api/deals").json()) == 500
 
 
-@pytest.mark.parametrize("path", ["/api/contacts", "/api/deals", "/api/organizations", "/api/pipeline", "/api/dashboard"])
+@pytest.mark.parametrize(
+    "path", ["/api/contacts", "/api/deals", "/api/organizations", "/api/pipeline", "/api/dashboard"]
+)
 def test_endpoints_answer_quickly(scale_client, path):
     """[R14] Each list, the board and the dashboard answer within 500 ms at the stated scale."""
     scale_client.get(path)  # warm up

@@ -36,9 +36,16 @@ The database is `backend/data/accountable.db`, created and seeded on first start
 
 `docs/spec.md` describes the whole product as it stands. Each change has its own folder, `docs/changes/<branch>/`, with its `intent.md` and `plan.md`; the MVP's are in `docs/changes/mvp/`.
 
-`npm test` fails at its first stage until `scripts/check-trace.mjs` is pointed at the new paths: it still reads `docs/intent.md` and `docs/plan.md`.
+`scripts/check-trace.mjs` reads `docs/changes/mvp/intent.md` and `docs/changes/mvp/plan.md`.
+
+## Checks
+
+`npm run check` runs formatting, linting, complexity, type checks, gitleaks and all the tests with coverage, and passes (frontend coverage about 90% lines, backend 97%). `npm run check:quick` skips the end-to-end tests, and `npm run format` fixes formatting.
+
+## Hooks
+
+A lefthook pre-commit hook (format, lint, types, gitleaks), and two agent hooks: `npm run check:quick` at the end of each turn, and a block on editing `.env` files. See AGENTS.md.
 
 ## Next
 
-- Point `scripts/check-trace.mjs` at `docs/changes/mvp/` (or at the current change's folder).
 - The project owner's walkthrough (C8, C9), then sign-off.

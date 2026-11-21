@@ -1,6 +1,11 @@
 import { format, isValid, parseISO } from 'date-fns'
 
-const whole = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0, minimumFractionDigits: 0 })
+const whole = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+  minimumFractionDigits: 0,
+})
 
 /** Whole US dollars, always with the dollar sign: $45,000. */
 export function money(value: number | null | undefined): string {

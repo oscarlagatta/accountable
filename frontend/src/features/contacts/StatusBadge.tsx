@@ -15,7 +15,13 @@ export function statusLabel(status: ContactStatus) {
 /** Always reads "Status: Qualified" and so on, so it can't be confused with the deal stage. */
 export function StatusBadge({ status, className }: { status: ContactStatus; className?: string }) {
   return (
-    <span className={cn('inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap', STYLES[status], className)}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap',
+        STYLES[status],
+        className,
+      )}
+    >
       {statusLabel(status)}
     </span>
   )

@@ -6,15 +6,28 @@
     "e2e"
   ],
   "scripts": {
+    "prepare": "lefthook install",
     "dev": "concurrently --names api,web --prefix-colors cyan,green \"uv run uvicorn backend.app.main:app --reload --reload-dir backend --port 8000\" \"npm run dev --workspace frontend\"",
     "seed": "uv run python -m backend.app.crm.seed",
     "test": "npm run test:trace && npm run test:backend && npm run test:frontend && npm run test:e2e",
     "test:trace": "node scripts/check-trace.mjs --strict",
-    "test:backend": "uv run pytest",
-    "test:frontend": "npm run test --workspace frontend",
-    "test:e2e": "npm run test --workspace e2e"
+    "test:backend": "uv run pytest --cov --cov-report=term",
+    "test:frontend": "npm run test --workspace frontend -- --coverage",
+    "test:e2e": "npm run test --workspace e2e",
+    "check": "node scripts/check.mjs",
+    "check:quick": "node scripts/check.mjs --quick",
+    "format": "prettier --write frontend && uv run ruff format backend"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@eslint/js": "^9.39.5",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "lefthook": "^2.2.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript-eslint": "^8.73.0"
   }
 }

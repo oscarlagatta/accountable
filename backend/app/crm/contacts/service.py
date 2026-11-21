@@ -3,6 +3,7 @@
 from sqlalchemy import Connection, delete, func, insert, select, update
 
 from backend.app.core import clock
+from backend.app.core.db import inserted_id
 from backend.app.core.errors import FieldError, NotFound
 
 from ..deals.service import deal_rows
@@ -10,8 +11,14 @@ from ..tables import activities, contacts, deals, organizations
 from .schemas import ContactIn, ContactPatch
 
 _FIELDS = [
-    contacts.c.id, contacts.c.first_name, contacts.c.last_name, contacts.c.email, contacts.c.phone,
-    contacts.c.job_title, contacts.c.organization_id, organizations.c.name.label("organization_name"),
+    contacts.c.id,
+    contacts.c.first_name,
+    contacts.c.last_name,
+    contacts.c.email,
+    contacts.c.phone,
+    contacts.c.job_title,
+    contacts.c.organization_id,
+    organizations.c.name.label("organization_name"),
     contacts.c.status,
 ]
 
@@ -43,11 +50,15 @@ def list_contacts(conn: Connection) -> list[dict]:
 
 
 def get_contact(conn: Connection, contact_id: int) -> dict:
-    row = conn.execute(
-        select(*_FIELDS)
-        .outerjoin(organizations, organizations.c.id == contacts.c.organization_id)
-        .where(contacts.c.id == contact_id)
-    ).mappings().first()
+    row = (
+        conn.execute(
+            select(*_FIELDS)
+            .outerjoin(organizations, organizations.c.id == contacts.c.organization_id)
+            .where(contacts.c.id == contact_id)
+        )
+        .mappings()
+        .first()
+    )
     if row is None:
         raise NotFound("Contact")
     contact = _with_name(row)
@@ -59,7 +70,7 @@ def create_contact(conn: Connection, data: ContactIn) -> dict:
     values = data.model_dump()
     _check_org(conn, values)
     stamp = clock.now().isoformat()
-    new_id = conn.execute(insert(contacts).values(**values, created_at=stamp, updated_at=stamp)).inserted_primary_key[0]
+    new_id = inserted_id(conn.execute(insert(contacts).values(**values, created_at=stamp, updated_at=stamp)))
     return get_contact(conn, new_id)
 
 
@@ -71,7 +82,9 @@ def update_contact(conn: Connection, contact_id: int, data: ContactPatch) -> dic
             raise FieldError({field: "Required"})
     _check_org(conn, values)
     if values:
-        conn.execute(update(contacts).where(contacts.c.id == contact_id).values(**values, updated_at=clock.now().isoformat()))
+        conn.execute(
+            update(contacts).where(contacts.c.id == contact_id).values(**values, updated_at=clock.now().isoformat())
+        )
     return get_contact(conn, contact_id)
 
 

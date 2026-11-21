@@ -43,7 +43,11 @@ export function useDeals() {
 }
 
 export function useDeal(id: number) {
-  return useQuery({ queryKey: dealKeys.one(id), queryFn: () => api.get<Deal>(`/deals/${id}`), enabled: !isDeleted('deals', id) })
+  return useQuery({
+    queryKey: dealKeys.one(id),
+    queryFn: () => api.get<Deal>(`/deals/${id}`),
+    enabled: !isDeleted('deals', id),
+  })
 }
 
 /** The stage list (labels and probabilities) comes from the API, never from the frontend. */

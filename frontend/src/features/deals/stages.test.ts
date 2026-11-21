@@ -5,7 +5,14 @@ describe('stage colors', () => {
     expect(STAGE_KEYS).toEqual(['new', 'qualified', 'proposal', 'negotiation', 'won', 'lost'])
     const lightText = Object.fromEntries(STAGE_KEYS.map((k) => [k, stageStyle(k).lightText]))
     // White on Cerulean and Won's Midnight; Midnight on Sea Green, Marigold, Coral and Lost's slate.
-    expect(lightText).toEqual({ new: false, qualified: false, proposal: false, negotiation: true, won: true, lost: false })
+    expect(lightText).toEqual({
+      new: false,
+      qualified: false,
+      proposal: false,
+      negotiation: true,
+      won: true,
+      lost: false,
+    })
     for (const k of STAGE_KEYS) {
       const s = stageStyle(k)
       expect(s.token).toBe(`var(--stage-${k})`)

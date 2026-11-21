@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -45,9 +45,9 @@ export function ConfirmDialog<P extends Preview>({
     gcTime: 0,
   })
   // Keep showing the last preview while the dialog closes, after the cache entry is gone.
-  const last = useRef<P | undefined>(undefined)
-  if (preview.data) last.current = preview.data
-  const shown = preview.data ?? last.current
+  const [last, setLast] = useState<P | undefined>(undefined)
+  if (preview.data && preview.data !== last) setLast(preview.data)
+  const shown = preview.data ?? last
   const [wasOpen, setWasOpen] = useState(open)
   if (open !== wasOpen) {
     setWasOpen(open)

@@ -1,6 +1,9 @@
 def test_crud(client):
     """[R7, C2] Organizations can be created, listed, read, updated and deleted."""
-    r = client.post("/api/organizations", json={"name": "  Northwind Logistics ", "website": "northwind.example.com", "industry": "Logistics"})
+    r = client.post(
+        "/api/organizations",
+        json={"name": "  Northwind Logistics ", "website": "northwind.example.com", "industry": "Logistics"},
+    )
     assert r.status_code == 201
     org = r.json()
     assert org["name"] == "Northwind Logistics"
@@ -53,7 +56,11 @@ def test_delete_unlinks_and_preview_counts(client, make):
     ds = [make.deal(organization_id=org) for _ in range(3)]
     make.contact()  # elsewhere
 
-    assert client.get(f"/api/organizations/{org}/delete-preview").json() == {"name": "Northwind", "contacts": 2, "deals": 3}
+    assert client.get(f"/api/organizations/{org}/delete-preview").json() == {
+        "name": "Northwind",
+        "contacts": 2,
+        "deals": 3,
+    }
     assert client.delete(f"/api/organizations/{org}").status_code == 204
     for pid in people:
         assert client.get(f"/api/contacts/{pid}").json()["organization_id"] is None

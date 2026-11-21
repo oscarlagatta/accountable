@@ -3,7 +3,14 @@ import type { TimelineEntry } from '@/features/activities/api'
 import type { StageKey } from '@/features/deals/stages'
 import { api } from '@/lib/api'
 
-export type Month = { month: string; label: string; year: number; won_value: number; won_count: number; lost_count: number }
+export type Month = {
+  month: string
+  label: string
+  year: number
+  won_value: number
+  won_count: number
+  lost_count: number
+}
 export type StripStage = { stage: StageKey; label: string; count: number; value: number; expected: number }
 export type FunnelStage = { stage: StageKey; label: string; count: number; value: number; share: number | null }
 export type FollowUp = TimelineEntry & { status: 'overdue' | 'today' | 'upcoming' }
@@ -30,5 +37,10 @@ export type Dashboard = {
 
 export function useDashboard() {
   // Worked out by the server on each load (R43), so it's always refetched when the page opens.
-  return useQuery({ queryKey: ['dashboard'], queryFn: () => api.get<Dashboard>('/dashboard'), staleTime: 0, refetchOnMount: 'always' })
+  return useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => api.get<Dashboard>('/dashboard'),
+    staleTime: 0,
+    refetchOnMount: 'always',
+  })
 }

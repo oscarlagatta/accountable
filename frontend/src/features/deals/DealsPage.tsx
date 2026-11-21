@@ -38,13 +38,23 @@ export function DealsPage() {
         id: 'organization',
         header: 'Organization',
         value: (r) => r.organization_name,
-        cell: (r) => (r.organization_id ? <RecordLink to={`/organizations/${r.organization_id}`}>{r.organization_name}</RecordLink> : <span className="text-ink-muted">None</span>),
+        cell: (r) =>
+          r.organization_id ? (
+            <RecordLink to={`/organizations/${r.organization_id}`}>{r.organization_name}</RecordLink>
+          ) : (
+            <span className="text-ink-muted">None</span>
+          ),
       },
       {
         id: 'contact',
         header: 'Main contact',
         value: (r) => r.contact_name,
-        cell: (r) => (r.contact_id ? <RecordLink to={`/contacts/${r.contact_id}`}>{r.contact_name}</RecordLink> : <span className="text-ink-muted">None</span>),
+        cell: (r) =>
+          r.contact_id ? (
+            <RecordLink to={`/contacts/${r.contact_id}`}>{r.contact_name}</RecordLink>
+          ) : (
+            <span className="text-ink-muted">None</span>
+          ),
       },
       {
         id: 'stage',
@@ -55,8 +65,20 @@ export function DealsPage() {
         cell: (r) => <StageBadge stage={r.stage} label={labels[r.stage]} />,
       },
       { id: 'value', header: 'Value', value: (r) => r.value, numeric: true, cell: (r) => <Money value={r.value} /> },
-      { id: 'probability', header: 'Probability', value: (r) => r.probability, numeric: true, cell: (r) => `${r.probability}%` },
-      { id: 'expected', header: 'Expected revenue', value: (r) => r.expected_revenue, numeric: true, cell: (r) => <Money value={r.expected_revenue} /> },
+      {
+        id: 'probability',
+        header: 'Probability',
+        value: (r) => r.probability,
+        numeric: true,
+        cell: (r) => `${r.probability}%`,
+      },
+      {
+        id: 'expected',
+        header: 'Expected revenue',
+        value: (r) => r.expected_revenue,
+        numeric: true,
+        cell: (r) => <Money value={r.expected_revenue} />,
+      },
       {
         id: 'close_date',
         header: 'Close date',
@@ -78,10 +100,12 @@ export function DealsPage() {
     [labels],
   )
 
-
   return (
     <Page>
-      <PageHeader title="Deals" subtitle={deals.data ? `${plural(deals.data.length, 'deal')}, open and closed` : 'Loading…'} />
+      <PageHeader
+        title="Deals"
+        subtitle={deals.data ? `${plural(deals.data.length, 'deal')}, open and closed` : 'Loading…'}
+      />
       <DataTable
         data={deals.data ?? []}
         columns={columns}
@@ -96,7 +120,11 @@ export function DealsPage() {
           </Button>
         }
       />
-      <RecordSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={editing === 'new' ? 'Add deal' : 'Edit deal'}>
+      <RecordSheet
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title={editing === 'new' ? 'Add deal' : 'Edit deal'}
+      >
         {editing !== null ? (
           <DealForm
             deal={editing === 'new' ? undefined : editing}

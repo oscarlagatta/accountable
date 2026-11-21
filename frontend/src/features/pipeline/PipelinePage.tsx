@@ -12,7 +12,7 @@ import {
   type KeyboardCoordinateGetter,
 } from '@dnd-kit/core'
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Page, PageHeader } from '@/components/PageHeader'
 import { RecordSheet } from '@/components/RecordSheet'
@@ -40,22 +40,25 @@ function containerOf(layout: Layout, id: string | number): StageKey | undefined 
  * by left edges, and the tilted card's box sits a little left of the others, so it would first land
  * on a card in its own column.
  */
-function columnKeyboardCoordinates(layoutRef: { current: Layout }): KeyboardCoordinateGetter {
-  return (event, args) => {
-    if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') return sortableKeyboardCoordinates(event, args)
-    event.preventDefault()
-    const { active, over, droppableRects } = args.context
-    if (!active) return undefined
-    const layout = layoutRef.current
-    const from = containerOf(layout, over?.id ?? active.id) ?? containerOf(layout, active.id)
-    if (!from) return undefined
-    const next = STAGE_KEYS[STAGE_KEYS.indexOf(from) + (event.code === 'ArrowRight' ? 1 : -1)]
-    if (!next) return undefined
-    const index = Math.max(0, layout[from].indexOf(Number(active.id)))
-    const target = layout[next].filter((id) => id !== Number(active.id))
-    const rect = target.length ? droppableRects.get(target[Math.min(index, target.length - 1)]) : droppableRects.get(`column:${next}`)
-    return rect ? { x: rect.left, y: rect.top + (index >= target.length && target.length ? rect.height : 0) } : undefined
-  }
+function columnKeyboardCoordinates(
+  layout: Layout,
+  event: KeyboardEvent,
+  args: Parameters<KeyboardCoordinateGetter>[1],
+): ReturnType<KeyboardCoordinateGetter> {
+  if (event.code !== 'ArrowLeft' && event.code !== 'ArrowRight') return sortableKeyboardCoordinates(event, args)
+  event.preventDefault()
+  const { active, over, droppableRects } = args.context
+  if (!active) return undefined
+  const from = containerOf(layout, over?.id ?? active.id) ?? containerOf(layout, active.id)
+  if (!from) return undefined
+  const next = STAGE_KEYS[STAGE_KEYS.indexOf(from) + (event.code === 'ArrowRight' ? 1 : -1)]
+  if (!next) return undefined
+  const index = Math.max(0, layout[from].indexOf(Number(active.id)))
+  const target = layout[next].filter((id) => id !== Number(active.id))
+  const rect = target.length
+    ? droppableRects.get(target[Math.min(index, target.length - 1)])
+    : droppableRects.get(`column:${next}`)
+  return rect ? { x: rect.left, y: rect.top + (index >= target.length && target.length ? rect.height : 0) } : undefined
 }
 
 export function PipelinePage() {
@@ -66,8 +69,13 @@ export function PipelinePage() {
   const [dragLayout, setDragLayout] = useState<Layout | null>(null)
   const [activeId, setActiveId] = useState<number | null>(null)
 
+  // The keyboard sensor reads the layout when a key is pressed, after render, so it reads it
+  // from a ref that is kept current after each commit.
   const layoutRef = useRef<Layout>({} as Layout)
-  const [keyboardCoordinates] = useState(() => columnKeyboardCoordinates(layoutRef))
+  const keyboardCoordinates = useCallback<KeyboardCoordinateGetter>(
+    (event, args) => columnKeyboardCoordinates(layoutRef.current, event, args),
+    [],
+  )
   const sensors = useSensors(
     // A small distance before a drag starts, so a click still opens the deal.
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -75,13 +83,18 @@ export function PipelinePage() {
   )
 
   const data = pipeline.data
-  const dealsById = useMemo(() => new Map<number, Deal>((data?.columns ?? []).flatMap((c) => c.deals.map((d) => [d.id, d] as const))), [data])
+  const dealsById = useMemo(
+    () => new Map<number, Deal>((data?.columns ?? []).flatMap((c) => c.deals.map((d) => [d.id, d] as const))),
+    [data],
+  )
   const serverLayout = useMemo(
     () => Object.fromEntries((data?.columns ?? []).map((c) => [c.stage, c.deals.map((d) => d.id)])) as Layout,
     [data],
   )
   const layout = dragLayout ?? serverLayout
-  layoutRef.current = layout
+  useLayoutEffect(() => {
+    layoutRef.current = layout
+  }, [layout])
 
   function onDragStart(e: DragStartEvent) {
     setActiveId(Number(e.active.id))
@@ -100,7 +113,10 @@ export function PipelinePage() {
       const id = Number(active.id)
       const target = prev[to].filter((x) => x !== id)
       const overIndex = typeof over.id === 'number' ? target.indexOf(Number(over.id)) : -1
-      const below = over.rect && active.rect.current.translated ? active.rect.current.translated.top > over.rect.top + over.rect.height / 2 : false
+      const below =
+        over.rect && active.rect.current.translated
+          ? active.rect.current.translated.top > over.rect.top + over.rect.height / 2
+          : false
       const index = overIndex === -1 ? target.length : overIndex + (below ? 1 : 0)
       target.splice(index, 0, id)
       return { ...prev, [from]: prev[from].filter((x) => x !== id), [to]: target }
@@ -154,18 +170,34 @@ export function PipelinePage() {
             {money(totals.open_value)} open · {money(totals.open_expected)} expected revenue · Won and Lost not counted
           </span>
         }
-        actions={
-          <Button onClick={() => setAdding({ stage: 'new', lock: false })}>Add deal</Button>
-        }
+        actions={<Button onClick={() => setAdding({ stage: 'new', lock: false })}>Add deal</Button>}
       />
-      <div className="mb-[18px] flex h-2.5 gap-[3px]" role="img" aria-label="Open value by stage" data-testid="summary-strip">
+      <div
+        className="mb-[18px] flex h-2.5 gap-[3px]"
+        role="img"
+        aria-label="Open value by stage"
+        data-testid="summary-strip"
+      >
         {segments.map((s) =>
           s.value > 0 ? (
-            <div key={s.stage} data-stage={s.stage} title={`${s.label}: ${money(s.value)}`} className={`rounded-[3px] ${stageStyle(s.stage).bg}`} style={{ flexGrow: s.value }} />
+            <div
+              key={s.stage}
+              data-stage={s.stage}
+              title={`${s.label}: ${money(s.value)}`}
+              className={`rounded-[3px] ${stageStyle(s.stage).bg}`}
+              style={{ flexGrow: s.value }}
+            />
           ) : null,
         )}
       </div>
-      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={onDragCancel}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
+        onDragCancel={onDragCancel}
+      >
         <div className="overflow-x-auto pb-2">
           <div className="grid min-w-[1240px] grid-cols-6 items-start gap-3">
             {data.columns.map((c) => (
@@ -180,7 +212,11 @@ export function PipelinePage() {
         </div>
         <DragOverlay>{active ? <Card deal={active} lifted data-testid="dragging-card" /> : null}</DragOverlay>
       </DndContext>
-      <RecordSheet open={adding !== null} onOpenChange={(o) => !o && setAdding(null)} title={adding?.lock ? `Add deal to ${data.columns.find((c) => c.stage === adding.stage)?.label}` : 'Add deal'}>
+      <RecordSheet
+        open={adding !== null}
+        onOpenChange={(o) => !o && setAdding(null)}
+        title={adding?.lock ? `Add deal to ${data.columns.find((c) => c.stage === adding.stage)?.label}` : 'Add deal'}
+      >
         {adding ? (
           <DealForm
             defaults={{ stage: adding.stage }}

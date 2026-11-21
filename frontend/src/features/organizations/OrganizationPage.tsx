@@ -17,6 +17,12 @@ import { organizationDeletePreview, useDeleteOrganization, useOrganization } fro
 import { OrganizationForm } from './OrganizationForm'
 import { organizationConsequences } from './OrganizationsPage'
 
+/** The organization's website as a link target, adding https:// when the stored value has no scheme. */
+function websiteHref(website: string | null) {
+  if (!website) return null
+  return website.startsWith('http') ? website : `https://${website}`
+}
+
 export function OrganizationPage() {
   const id = Number(useParams().id)
   const org = useOrganization(id)
@@ -25,17 +31,31 @@ export function OrganizationPage() {
   const [sheet, setSheet] = useState<'edit' | 'contact' | 'deal' | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  if (org.error instanceof ApiError && org.error.status === 404) return <NotFoundMessage what="Organization" back={{ to: '/organizations', label: 'Back to organizations' }} />
-  if (!org.data) return <Page>{org.isError ? <p className="text-raspberry-ink">Couldn't load this organization.</p> : <p className="text-ink-muted">Loading…</p>}</Page>
+  if (org.error instanceof ApiError && org.error.status === 404)
+    return <NotFoundMessage what="Organization" back={{ to: '/organizations', label: 'Back to organizations' }} />
+  if (!org.data)
+    return (
+      <Page>
+        {org.isError ? (
+          <p className="text-raspberry-ink">Couldn't load this organization.</p>
+        ) : (
+          <p className="text-ink-muted">Loading…</p>
+        )}
+      </Page>
+    )
   const o = org.data
   const openDeals = o.deals.filter((d) => !['won', 'lost'].includes(d.stage))
-  const website = o.website ? (o.website.startsWith('http') ? o.website : `https://${o.website}`) : null
+  const website = websiteHref(o.website)
 
   return (
     <Page>
       <RecordHeader
         title={o.name}
-        badges={o.industry ? <span className="rounded-full bg-page px-2 py-0.5 text-xs font-semibold">{o.industry}</span> : null}
+        badges={
+          o.industry ? (
+            <span className="rounded-full bg-page px-2 py-0.5 text-xs font-semibold">{o.industry}</span>
+          ) : null
+        }
         subtitle="Organization"
         actions={
           <>
@@ -96,7 +116,9 @@ export function OrganizationPage() {
                       <RecordLink to={`/contacts/${c.id}`} className="font-medium">
                         {c.name}
                       </RecordLink>
-                      <div className="truncate text-[13px] text-ink-muted">{[c.job_title, c.email].filter(Boolean).join(' · ')}</div>
+                      <div className="truncate text-[13px] text-ink-muted">
+                        {[c.job_title, c.email].filter(Boolean).join(' · ')}
+                      </div>
                     </div>
                     <StatusBadge status={c.status} />
                   </li>

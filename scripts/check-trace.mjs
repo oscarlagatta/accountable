@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Checks that every requirement, concern and success criterion is mapped to a
-// phase and to tests in docs/plan.md, and (with --strict) that the tests exist
+// phase and to tests in docs/changes/mvp/plan.md, and (with --strict) that the tests exist
 // and carry the IDs in their titles, such as "[R30] ...".
 //
 // Without --strict, the test-file checks run only on test files that already
@@ -41,8 +41,8 @@ function numberedItems(lines) {
 
 // 1. IDs from the source documents
 const spec = read('docs/spec.md')
-const intent = read('docs/intent.md')
-const plan = read('docs/plan.md')
+const intent = read('docs/changes/mvp/intent.md')
+const plan = read('docs/changes/mvp/plan.md')
 
 const sourceIds = new Set()
 for (const m of spec.matchAll(/^- R(\d+)\./gm)) sourceIds.add(`R${m[1]}`)

@@ -123,7 +123,10 @@ export function DataTable<T extends { id: number }>({
     <section className="rounded-lg bg-panel shadow-panel">
       <div className="flex items-center gap-3 px-5 pt-[18px] pb-3">
         <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted" aria-hidden />
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+            aria-hidden
+          />
           <Input
             type="search"
             aria-label={searchLabel ?? `Search ${noun}`}
@@ -148,7 +151,10 @@ export function DataTable<T extends { id: number }>({
                     <th
                       key={header.id}
                       aria-sort={sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none'}
-                      className={cn('h-9 px-2 text-xs font-medium whitespace-nowrap text-ink-muted', col.numeric ? 'text-right' : 'text-left')}
+                      className={cn(
+                        'h-9 px-2 text-xs font-medium whitespace-nowrap text-ink-muted',
+                        col.numeric ? 'text-right' : 'text-left',
+                      )}
                     >
                       <button
                         type="button"
@@ -178,19 +184,30 @@ export function DataTable<T extends { id: number }>({
                   onClick={() => navigate(rowHref(row))}
                   className="group h-11 cursor-pointer border-t border-line hover:bg-hover"
                 >
-                  {columns.filter((c) => !c.hidden).map((c) => (
-                    <td
-                      key={c.id}
-                      className={cn('px-2 py-1.5 whitespace-nowrap', c.numeric && 'text-right font-mono tabular-nums', c.className)}
-                    >
-                      {c.cell ? c.cell(row) : (c.value(row) ?? '')}
-                    </td>
-                  ))}
+                  {columns
+                    .filter((c) => !c.hidden)
+                    .map((c) => (
+                      <td
+                        key={c.id}
+                        className={cn(
+                          'px-2 py-1.5 whitespace-nowrap',
+                          c.numeric && 'text-right font-mono tabular-nums',
+                          c.className,
+                        )}
+                      >
+                        {c.cell ? c.cell(row) : (c.value(row) ?? '')}
+                      </td>
+                    ))}
                   {hasActions ? (
                     <td className="px-2 text-right whitespace-nowrap" onClick={stop}>
                       <div className="inline-flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
                         {onEdit ? (
-                          <Button variant="ghost" size="icon-sm" aria-label={`Edit ${rowLabel(row)}`} onClick={() => onEdit(row)}>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label={`Edit ${rowLabel(row)}`}
+                            onClick={() => onEdit(row)}
+                          >
                             <Pencil />
                           </Button>
                         ) : null}

@@ -17,7 +17,15 @@ describe('OrganizationForm', () => {
   })
 
   it('[R10] saves trimmed values, with blanks as empty', async () => {
-    const saved = { id: 9, name: 'Northwind', website: 'northwind.example.com', industry: null, notes: null, contacts: [], deals: [] }
+    const saved = {
+      id: 9,
+      name: 'Northwind',
+      website: 'northwind.example.com',
+      industry: null,
+      notes: null,
+      contacts: [],
+      deals: [],
+    }
     const { calls } = mockApi({ 'POST /organizations': saved })
     const onSaved = vi.fn()
     renderWithProviders(<OrganizationForm onSaved={onSaved} onCancel={vi.fn()} />)
@@ -29,9 +37,12 @@ describe('OrganizationForm', () => {
     expect(calls[0].body).toEqual({ name: 'Northwind', website: 'northwind.example.com', industry: null, notes: null })
   })
 
-  it('[R10] shows the server\'s field messages', async () => {
+  it("[R10] shows the server's field messages", async () => {
     mockApi({
-      'POST /organizations': () => new Response(JSON.stringify({ detail: 'Some fields need attention', errors: { name: 'Already taken' } }), { status: 422 }),
+      'POST /organizations': () =>
+        new Response(JSON.stringify({ detail: 'Some fields need attention', errors: { name: 'Already taken' } }), {
+          status: 422,
+        }),
     })
     renderWithProviders(<OrganizationForm onSaved={vi.fn()} onCancel={vi.fn()} />)
     const user = userEvent.setup()

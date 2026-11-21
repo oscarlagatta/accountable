@@ -5,6 +5,7 @@ from datetime import date
 from sqlalchemy import ColumnElement, Connection, delete, func, insert, select, update
 
 from backend.app.core import clock
+from backend.app.core.db import inserted_id
 from backend.app.core.errors import FieldError, NotFound
 
 from .. import stages
@@ -27,9 +28,17 @@ def deal_rows(conn: Connection, where: ColumnElement | None = None, order_by=Non
     """Deals with organization and contact names, expected revenue and `late`."""
     q = (
         select(
-            deals.c.id, deals.c.name, deals.c.organization_id, organizations.c.name.label("organization_name"),
-            deals.c.contact_id, (contacts.c.first_name + " " + contacts.c.last_name).label("contact_name"),
-            deals.c.stage, deals.c.value, deals.c.probability, deals.c.close_date, deals.c.position,
+            deals.c.id,
+            deals.c.name,
+            deals.c.organization_id,
+            organizations.c.name.label("organization_name"),
+            deals.c.contact_id,
+            (contacts.c.first_name + " " + contacts.c.last_name).label("contact_name"),
+            deals.c.stage,
+            deals.c.value,
+            deals.c.probability,
+            deals.c.close_date,
+            deals.c.position,
         )
         .outerjoin(organizations, organizations.c.id == deals.c.organization_id)
         .outerjoin(contacts, contacts.c.id == deals.c.contact_id)
@@ -57,13 +66,15 @@ def _require(conn: Connection, deal_id: int) -> dict:
 
 def _check_links(conn: Connection, values: dict) -> None:
     errors = {}
-    if values.get("organization_id") is not None and not conn.execute(
-        select(organizations.c.id).where(organizations.c.id == values["organization_id"])
-    ).first():
+    if (
+        values.get("organization_id") is not None
+        and not conn.execute(select(organizations.c.id).where(organizations.c.id == values["organization_id"])).first()
+    ):
         errors["organization_id"] = "That organization no longer exists"
-    if values.get("contact_id") is not None and not conn.execute(
-        select(contacts.c.id).where(contacts.c.id == values["contact_id"])
-    ).first():
+    if (
+        values.get("contact_id") is not None
+        and not conn.execute(select(contacts.c.id).where(contacts.c.id == values["contact_id"])).first()
+    ):
         errors["contact_id"] = "That contact no longer exists"
     if errors:
         raise FieldError(errors)
@@ -102,7 +113,7 @@ def create_deal(conn: Connection, data: DealIn) -> dict:
     values["close_date"] = values["close_date"].isoformat()
     stamp = clock.now().isoformat()
     column = _column_ids(conn, values["stage"])
-    new_id = conn.execute(insert(deals).values(**values, position=0, created_at=stamp, updated_at=stamp)).inserted_primary_key[0]
+    new_id = inserted_id(conn.execute(insert(deals).values(**values, position=0, created_at=stamp, updated_at=stamp)))
     _renumber(conn, [new_id, *column])
     return get_deal(conn, new_id)
 
@@ -111,9 +122,15 @@ def _record_stage_change(conn: Connection, deal_id: int, frm: str, to: str) -> N
     stamp = clock.now().isoformat()
     conn.execute(
         insert(activities).values(
-            kind="stage_change", deal_id=deal_id, from_stage=frm, to_stage=to,
+            kind="stage_change",
+            deal_id=deal_id,
+            from_stage=frm,
+            to_stage=to,
             description=f"Moved from {stages.label(frm)} to {stages.label(to)}",
-            occurred_at=stamp, done=False, created_at=stamp, updated_at=stamp,
+            occurred_at=stamp,
+            done=False,
+            created_at=stamp,
+            updated_at=stamp,
         )
     )
 
@@ -194,7 +211,11 @@ def delete_preview(conn: Connection, deal_id: int) -> dict:
         select(activities.c.kind, func.count()).where(activities.c.deal_id == deal_id).group_by(activities.c.kind)
     ).all()
     stage_changes = sum(n for k, n in kinds if k == "stage_change")
-    return {"name": deal["name"], "activities": sum(n for _, n in kinds) - stage_changes, "stage_changes": stage_changes}
+    return {
+        "name": deal["name"],
+        "activities": sum(n for _, n in kinds) - stage_changes,
+        "stage_changes": stage_changes,
+    }
 
 
 def delete_deal(conn: Connection, deal_id: int) -> None:

@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import Connection, Select, delete, insert, or_, select, update
 
 from backend.app.core import clock
+from backend.app.core.db import inserted_id
 from backend.app.core.errors import FieldError, NotFound, Refused
 
 from ..tables import activities, contacts, deals
@@ -18,10 +19,18 @@ def entries_query() -> Select:
     """Activities with the names of what they're on: the contact, or the deal and its main contact."""
     return (
         select(
-            activities.c.id, activities.c.kind, activities.c.description, activities.c.occurred_at,
-            activities.c.follow_up_date, activities.c.done, activities.c.from_stage, activities.c.to_stage,
-            activities.c.contact_id, (contacts.c.first_name + " " + contacts.c.last_name).label("contact_name"),
-            activities.c.deal_id, deals.c.name.label("deal_name"),
+            activities.c.id,
+            activities.c.kind,
+            activities.c.description,
+            activities.c.occurred_at,
+            activities.c.follow_up_date,
+            activities.c.done,
+            activities.c.from_stage,
+            activities.c.to_stage,
+            activities.c.contact_id,
+            (contacts.c.first_name + " " + contacts.c.last_name).label("contact_name"),
+            activities.c.deal_id,
+            deals.c.name.label("deal_name"),
         )
         .outerjoin(contacts, contacts.c.id == activities.c.contact_id)
         .outerjoin(deals, deals.c.id == activities.c.deal_id)
@@ -60,19 +69,29 @@ def _iso(dt: datetime) -> str:
 
 
 def create_activity(conn: Connection, data: ActivityIn) -> dict:
-    if data.contact_id is not None and not conn.execute(select(contacts.c.id).where(contacts.c.id == data.contact_id)).first():
+    if (
+        data.contact_id is not None
+        and not conn.execute(select(contacts.c.id).where(contacts.c.id == data.contact_id)).first()
+    ):
         raise FieldError({"contact_id": "That contact no longer exists"})
     if data.deal_id is not None and not conn.execute(select(deals.c.id).where(deals.c.id == data.deal_id)).first():
         raise FieldError({"deal_id": "That deal no longer exists"})
     stamp = clock.now().isoformat()
-    new_id = conn.execute(
-        insert(activities).values(
-            kind=data.kind, contact_id=data.contact_id, deal_id=data.deal_id, description=data.description,
-            occurred_at=_iso(data.occurred_at) if data.occurred_at else stamp,
-            follow_up_date=data.follow_up_date.isoformat() if data.follow_up_date else None,
-            done=False, created_at=stamp, updated_at=stamp,
+    new_id = inserted_id(
+        conn.execute(
+            insert(activities).values(
+                kind=data.kind,
+                contact_id=data.contact_id,
+                deal_id=data.deal_id,
+                description=data.description,
+                occurred_at=_iso(data.occurred_at) if data.occurred_at else stamp,
+                follow_up_date=data.follow_up_date.isoformat() if data.follow_up_date else None,
+                done=False,
+                created_at=stamp,
+                updated_at=stamp,
+            )
         )
-    ).inserted_primary_key[0]
+    )
     return get_activity(conn, new_id)
 
 
@@ -98,7 +117,11 @@ def update_activity(conn: Connection, activity_id: int, data: ActivityPatch) -> 
         if values["follow_up_date"] is None:
             values["done"] = False
     if values:
-        conn.execute(update(activities).where(activities.c.id == activity_id).values(**values, updated_at=clock.now().isoformat()))
+        conn.execute(
+            update(activities)
+            .where(activities.c.id == activity_id)
+            .values(**values, updated_at=clock.now().isoformat())
+        )
     return get_activity(conn, activity_id)
 
 

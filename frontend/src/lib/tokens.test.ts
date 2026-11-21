@@ -27,7 +27,8 @@ describe('color tokens', () => {
         .split('\n')
         .forEach((line, i) => {
           const isChartSelector = file.endsWith(path.join('ui', 'chart.tsx')) && ALLOWED.some((r) => r.test(line))
-          if (COLOR.test(line) && !isChartSelector) offenders.push(`${path.relative(src, file)}:${i + 1}: ${line.trim()}`)
+          if (COLOR.test(line) && !isChartSelector)
+            offenders.push(`${path.relative(src, file)}:${i + 1}: ${line.trim()}`)
         })
     }
     expect(offenders).toEqual([])
@@ -42,7 +43,17 @@ describe('color tokens', () => {
   })
 
   it('[K12] the brand colors are defined once, on :root', () => {
-    for (const hex of ['#06d6a0', '#ffc145', '#f78c6b', '#118ab2', '#ef476f', '#073b4c', '#cdd8db', '#f0f4f5', '#8aa1a9']) {
+    for (const hex of [
+      '#06d6a0',
+      '#ffc145',
+      '#f78c6b',
+      '#118ab2',
+      '#ef476f',
+      '#073b4c',
+      '#cdd8db',
+      '#f0f4f5',
+      '#8aa1a9',
+    ]) {
       const count = css.toLowerCase().split(hex).length - 1
       expect(count, hex).toBe(1)
     }

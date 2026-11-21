@@ -44,7 +44,11 @@ export function useOrganizations() {
 }
 
 export function useOrganization(id: number) {
-  return useQuery({ queryKey: organizationKeys.one(id), queryFn: () => api.get<Organization>(`/organizations/${id}`), enabled: !isDeleted('organizations', id) })
+  return useQuery({
+    queryKey: organizationKeys.one(id),
+    queryFn: () => api.get<Organization>(`/organizations/${id}`),
+    enabled: !isDeleted('organizations', id),
+  })
 }
 
 export function useSaveOrganization() {

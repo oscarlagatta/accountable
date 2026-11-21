@@ -13,8 +13,8 @@ def test_missing_database_is_created_and_seeded(temp_db):
         assert client.get("/api/health").json() == {"ok": True}
     assert temp_db.exists()
     with db.get_engine().connect() as conn:
-        assert conn.execute(select(func.count()).select_from(organizations)).scalar() > 0
-        assert conn.execute(select(func.count()).select_from(deals)).scalar() > 0
+        assert conn.execute(select(func.count()).select_from(organizations)).scalar_one() > 0
+        assert conn.execute(select(func.count()).select_from(deals)).scalar_one() > 0
 
 
 def test_existing_database_is_left_alone(engine, make):

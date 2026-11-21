@@ -1,0 +1,31 @@
+# Git hooks. `npm install` installs them (the root `prepare` script).
+# pre-commit formats the staged files, then runs lint, type checks and gitleaks.
+# Tests are left to `npm run check`, so commits stay quick.
+
+pre-commit:
+  piped: true
+  jobs:
+    - name: format
+      glob:
+        - 'frontend/**'
+        - 'backend/**/*.py'
+      run: node scripts/format-staged.mjs {staged_files}
+
+    - name: checks
+      group:
+        parallel: true
+        jobs:
+          - name: eslint
+            glob: 'frontend/**/*.{ts,tsx}'
+            run: npx eslint {staged_files}
+          - name: ruff check
+            glob: 'backend/**/*.py'
+            run: uv run ruff check {staged_files}
+          - name: tsc
+            glob: 'frontend/**/*.{ts,tsx}'
+            run: npm run typecheck --workspace frontend
+          - name: ty
+            glob: 'backend/**/*.py'
+            run: uv run ty check backend
+          - name: gitleaks
+            run: gitleaks git --pre-commit --staged --redact --no-banner .

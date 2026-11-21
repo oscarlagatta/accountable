@@ -5,13 +5,29 @@ import { cn } from '@/lib/utils'
 /** A linked record name: a real link to that record's page. Clicks don't reach a clickable row behind it. */
 export function RecordLink({ to, children, className }: { to: string; children: ReactNode; className?: string }) {
   return (
-    <Link to={to} onClick={(e: MouseEvent) => e.stopPropagation()} className={cn('text-cerulean-ink hover:underline', className)}>
+    <Link
+      to={to}
+      onClick={(e: MouseEvent) => e.stopPropagation()}
+      className={cn('text-cerulean-ink hover:underline', className)}
+    >
       {children}
     </Link>
   )
 }
 
-export function RecordHeader({ title, badges, figures, actions, subtitle }: { title: string; badges?: ReactNode; figures?: ReactNode; actions?: ReactNode; subtitle?: ReactNode }) {
+export function RecordHeader({
+  title,
+  badges,
+  figures,
+  actions,
+  subtitle,
+}: {
+  title: string
+  badges?: ReactNode
+  figures?: ReactNode
+  actions?: ReactNode
+  subtitle?: ReactNode
+}) {
   return (
     <section className="mb-4 rounded-lg bg-panel px-6 py-5 shadow-panel">
       <div className="flex items-start justify-between gap-6">

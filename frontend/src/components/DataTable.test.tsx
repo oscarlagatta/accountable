@@ -29,14 +29,25 @@ const columns: Column<Row>[] = [
 ]
 
 function names() {
-  return screen.getAllByRole('row').slice(1).map((r) => within(r).getAllByRole('cell')[0].textContent)
+  return screen
+    .getAllByRole('row')
+    .slice(1)
+    .map((r) => within(r).getAllByRole('cell')[0].textContent)
 }
 
 function setup(extra: Partial<Parameters<typeof DataTable<Row>>[0]> = {}) {
   const onEdit = vi.fn()
   const onDelete = vi.fn()
   const utils = renderWithProviders(
-    <DataTable data={data} columns={columns} noun="organizations" rowHref={(r) => `/organizations/${r.id}`} onEdit={onEdit} onDelete={onDelete} {...extra} />,
+    <DataTable
+      data={data}
+      columns={columns}
+      noun="organizations"
+      rowHref={(r) => `/organizations/${r.id}`}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      {...extra}
+    />,
   )
   return { ...utils, onEdit, onDelete, user: userEvent.setup() }
 }
@@ -103,7 +114,15 @@ describe('DataTable', () => {
   })
 
   it('[R7] says when there are no records at all', () => {
-    renderWithProviders(<DataTable data={[]} columns={columns} noun="deals" rowHref={() => '/'} emptyText="No deals yet. Add one to get started." />)
+    renderWithProviders(
+      <DataTable
+        data={[]}
+        columns={columns}
+        noun="deals"
+        rowHref={() => '/'}
+        emptyText="No deals yet. Add one to get started."
+      />,
+    )
     expect(screen.getByText('No deals yet. Add one to get started.')).toBeInTheDocument()
   })
 })

@@ -11,7 +11,10 @@ import { Card } from './Card'
 
 function SortableCard({ deal }: { deal: Deal }) {
   const navigate = useNavigate()
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: deal.id, data: { stage: deal.stage } })
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: deal.id,
+    data: { stage: deal.stage },
+  })
   const style = { transform: CSS.Translate.toString(transform), transition }
   if (isDragging) return <Card ref={setNodeRef} style={style} deal={deal} placeholder />
   return (
@@ -35,14 +38,20 @@ export function Column({ column, deals, onAdd }: { column: PipelineColumn; deals
     <section
       aria-label={`${column.label} column`}
       data-stage={column.stage}
-      className={cn('flex min-h-[720px] min-w-[200px] flex-col rounded-lg bg-panel p-2.5 shadow-panel transition-colors', isOver && 'bg-hover')}
+      className={cn(
+        'flex min-h-[720px] min-w-[200px] flex-col rounded-lg bg-panel p-2.5 shadow-panel transition-colors',
+        isOver && 'bg-hover',
+      )}
     >
       <header className={cn('mb-2.5 rounded-md px-3 py-2.5', style.fill)} data-testid="column-header">
         <div className="flex items-center justify-between font-semibold">
           <h2>{column.label}</h2>
           <span
             data-testid="column-count"
-            className={cn('rounded-full px-2 py-px font-mono text-xs font-semibold', style.lightText ? 'bg-count-pill-dark' : 'bg-count-pill-light')}
+            className={cn(
+              'rounded-full px-2 py-px font-mono text-xs font-semibold',
+              style.lightText ? 'bg-count-pill-dark' : 'bg-count-pill-light',
+            )}
           >
             {column.count}
           </span>

@@ -12,7 +12,13 @@ def test_tables_and_indexes_exist(engine):
     insp = inspect(engine)
     assert {"organizations", "contacts", "deals", "activities"} <= set(insp.get_table_names())
     indexed = {tuple(ix["column_names"]) for t in ("contacts", "deals", "activities") for ix in insp.get_indexes(t)}
-    for cols in [("organization_id",), ("contact_id",), ("deal_id",), ("stage", "position"), ("follow_up_date", "done")]:
+    for cols in [
+        ("organization_id",),
+        ("contact_id",),
+        ("deal_id",),
+        ("stage", "position"),
+        ("follow_up_date", "done"),
+    ]:
         assert cols in indexed, cols
 
 
@@ -21,8 +27,11 @@ def test_foreign_keys_are_on(engine):
     with engine.connect() as conn:
         assert conn.exec_driver_sql("PRAGMA foreign_keys").scalar() == 1
     with pytest.raises(IntegrityError), engine.begin() as conn:
-        conn.execute(contacts.insert().values(first_name="A", last_name="B", status="lead", organization_id=999,
-                                              created_at="x", updated_at="x"))
+        conn.execute(
+            contacts.insert().values(
+                first_name="A", last_name="B", status="lead", organization_id=999, created_at="x", updated_at="x"
+            )
+        )
 
 
 def test_delete_rules(engine, make):

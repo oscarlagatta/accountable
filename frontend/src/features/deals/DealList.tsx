@@ -6,7 +6,15 @@ import { LateLabel } from './LateLabel'
 import { StageBadge } from './StageBadge'
 
 /** A compact list of deals for record pages. */
-export function DealList({ deals, empty, showOrganization = false }: { deals: Deal[]; empty: string; showOrganization?: boolean }) {
+export function DealList({
+  deals,
+  empty,
+  showOrganization = false,
+}: {
+  deals: Deal[]
+  empty: string
+  showOrganization?: boolean
+}) {
   if (deals.length === 0) return <p className="py-3 text-sm text-ink-muted">{empty}</p>
   return (
     <ul aria-label="Deals" className="divide-y divide-line">
@@ -17,7 +25,7 @@ export function DealList({ deals, empty, showOrganization = false }: { deals: De
               {d.name}
             </RecordLink>
             <div className="truncate text-[13px] text-ink-muted">
-              {showOrganization ? d.organization_name ?? 'No organization' : d.contact_name ?? 'No main contact'}
+              {showOrganization ? (d.organization_name ?? 'No organization') : (d.contact_name ?? 'No main contact')}
             </div>
           </div>
           <StageBadge stage={d.stage} />

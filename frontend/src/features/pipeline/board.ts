@@ -34,7 +34,13 @@ function localToday() {
  * optimistic board matches what comes back. Another column means the stage's probability, and Won
  * or Lost sets the close date to today. Returns a new object; the input isn't changed.
  */
-export function moveCard(board: Pipeline, dealId: number, stage: StageKey, index: number, today = localToday()): Pipeline {
+export function moveCard(
+  board: Pipeline,
+  dealId: number,
+  stage: StageKey,
+  index: number,
+  today = localToday(),
+): Pipeline {
   if (!isStageKey(stage)) throw new Error(`Unknown stage: ${stage}`)
   const from = board.columns.find((c) => c.deals.some((d) => d.id === dealId))
   if (!from) return board
@@ -66,5 +72,7 @@ export function moveCard(board: Pipeline, dealId: number, stage: StageKey, index
 
 /** The four open stages' share of the open value, for the strip. */
 export function stripSegments(columns: PipelineColumn[]) {
-  return columns.filter((c) => c.open).map((c) => ({ stage: c.stage, label: c.label, value: c.total, count: c.count, expected: c.expected }))
+  return columns
+    .filter((c) => c.open)
+    .map((c) => ({ stage: c.stage, label: c.label, value: c.total, count: c.count, expected: c.expected }))
 }

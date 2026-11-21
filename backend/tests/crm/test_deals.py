@@ -25,7 +25,9 @@ def test_crud(client, make):
     assert client.get(f"/api/deals/{d['id']}").status_code == 404
 
 
-@pytest.mark.parametrize("stage,expected", [("new", 5), ("qualified", 20), ("proposal", 40), ("negotiation", 70), ("won", 100), ("lost", 0)])
+@pytest.mark.parametrize(
+    "stage,expected", [("new", 5), ("qualified", 20), ("proposal", 40), ("negotiation", 70), ("won", 100), ("lost", 0)]
+)
 def test_new_deal_gets_stage_probability(client, stage, expected):
     """[R23] A new deal gets its stage's probability."""
     assert new_deal(client, stage=stage)["probability"] == expected
@@ -65,7 +67,9 @@ def test_hand_set_probability_kept_until_stage_changes(client):
     assert client.patch(f"/api/deals/{d['id']}", json={"probability": 55}).json()["probability"] == 55
     assert client.patch(f"/api/deals/{d['id']}", json={"value": 20000}).json()["probability"] == 55
     assert client.post(f"/api/deals/{d['id']}/move", json={"stage": "proposal", "index": 0}).json()["probability"] == 55
-    assert client.post(f"/api/deals/{d['id']}/move", json={"stage": "negotiation", "index": 0}).json()["probability"] == 70
+    assert (
+        client.post(f"/api/deals/{d['id']}/move", json={"stage": "negotiation", "index": 0}).json()["probability"] == 70
+    )
 
 
 def test_create_with_hand_set_probability(client):
@@ -80,7 +84,11 @@ def test_delete_removes_activities(client, make):
     client.post(f"/api/deals/{d['id']}/move", json={"stage": "qualified", "index": 0})
     for _ in range(3):
         make.activity(deal_id=d["id"])
-    assert client.get(f"/api/deals/{d['id']}/delete-preview").json() == {"name": "Doomed", "activities": 3, "stage_changes": 1}
+    assert client.get(f"/api/deals/{d['id']}/delete-preview").json() == {
+        "name": "Doomed",
+        "activities": 3,
+        "stage_changes": 1,
+    }
     client.delete(f"/api/deals/{d['id']}")
     assert client.get(f"/api/contacts/{person}/timeline").json() == []
 
@@ -94,4 +102,6 @@ def test_validation(client):
     assert errors["probability"] == "Must be 100 or less"
     assert errors["close_date"] == "Required"
     assert errors["stage"] == "Choose one of the options"
-    assert client.post("/api/deals", json={"name": "x", "value": 10.5, "close_date": "2026-12-01"}).json()["errors"] == {"value": "Enter a whole number"}
+    assert client.post("/api/deals", json={"name": "x", "value": 10.5, "close_date": "2026-12-01"}).json()[
+        "errors"
+    ] == {"value": "Enter a whole number"}

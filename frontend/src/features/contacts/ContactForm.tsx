@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { FormActions, FormRow, applyServerErrors } from '@/components/form'
@@ -8,14 +8,24 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useOrganizations } from '@/features/organizations/api'
-import { CONTACT_STATUSES, useSaveContact, type Contact, type ContactInput, type ContactRow, type ContactStatus } from './api'
+import {
+  CONTACT_STATUSES,
+  useSaveContact,
+  type Contact,
+  type ContactInput,
+  type ContactRow,
+  type ContactStatus,
+} from './api'
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 export const contactSchema = z.object({
   first_name: z.string().trim().min(1, 'Required'),
   last_name: z.string().trim().min(1, 'Required'),
-  email: z.string().trim().refine((v) => v === '' || EMAIL.test(v), 'Enter a valid email address'),
+  email: z
+    .string()
+    .trim()
+    .refine((v) => v === '' || EMAIL.test(v), 'Enter a valid email address'),
   phone: z.string().trim(),
   job_title: z.string().trim(),
   organization_id: z.string().nullable(),
@@ -25,6 +35,38 @@ type Values = z.infer<typeof contactSchema>
 
 const blank = (v: string) => (v === '' ? null : v)
 
+type Defaults = { organization_id?: number | null; status?: ContactStatus }
+
+/** The form's starting values: the contact being edited, or a new contact with the given defaults. */
+function initialValues(contact: ContactRow | undefined, defaults: Defaults | undefined): Values {
+  return {
+    first_name: contact?.first_name ?? '',
+    last_name: contact?.last_name ?? '',
+    email: contact?.email ?? '',
+    phone: contact?.phone ?? '',
+    job_title: contact?.job_title ?? '',
+    organization_id: initialOrganization(contact, defaults),
+    status: contact?.status ?? defaults?.status ?? 'lead',
+  }
+}
+
+function initialOrganization(contact: ContactRow | undefined, defaults: Defaults | undefined) {
+  const orgId = contact ? contact.organization_id : (defaults?.organization_id ?? null)
+  return orgId === null ? null : String(orgId)
+}
+
+function toInput(v: Values): ContactInput {
+  return {
+    first_name: v.first_name,
+    last_name: v.last_name,
+    email: blank(v.email),
+    phone: blank(v.phone),
+    job_title: blank(v.job_title),
+    organization_id: v.organization_id ? Number(v.organization_id) : null,
+    status: v.status,
+  }
+}
+
 export function ContactForm({
   contact,
   defaults,
@@ -32,40 +74,28 @@ export function ContactForm({
   onCancel,
 }: {
   contact?: ContactRow
-  defaults?: { organization_id?: number | null; status?: ContactStatus }
+  defaults?: Defaults
   onSaved: (c: Contact) => void
   onCancel: () => void
 }) {
   const save = useSaveContact()
   const orgs = useOrganizations()
   const [formError, setFormError] = useState<string | null>(null)
-  const orgId = contact ? contact.organization_id : (defaults?.organization_id ?? null)
-  const { register, handleSubmit, setError, control, formState } = useForm<Values>({
+  const { register, handleSubmit, setError, setFocus, control, formState } = useForm<Values>({
     resolver: zodResolver(contactSchema),
-    defaultValues: {
-      first_name: contact?.first_name ?? '',
-      last_name: contact?.last_name ?? '',
-      email: contact?.email ?? '',
-      phone: contact?.phone ?? '',
-      job_title: contact?.job_title ?? '',
-      organization_id: orgId === null ? null : String(orgId),
-      status: contact?.status ?? defaults?.status ?? 'lead',
-    },
+    defaultValues: initialValues(contact, defaults),
   })
   const errors = formState.errors
-  const orgOptions = useMemo(() => (orgs.data ?? []).map((o) => ({ value: String(o.id), label: o.name, detail: o.industry })), [orgs.data])
+  // The first name field takes focus when the form opens.
+  useEffect(() => setFocus('first_name'), [setFocus])
+  const orgOptions = useMemo(
+    () => (orgs.data ?? []).map((o) => ({ value: String(o.id), label: o.name, detail: o.industry })),
+    [orgs.data],
+  )
 
   async function onSubmit(v: Values) {
     setFormError(null)
-    const data: ContactInput = {
-      first_name: v.first_name,
-      last_name: v.last_name,
-      email: blank(v.email),
-      phone: blank(v.phone),
-      job_title: blank(v.job_title),
-      organization_id: v.organization_id ? Number(v.organization_id) : null,
-      status: v.status,
-    }
+    const data = toInput(v)
     try {
       onSaved(await save.mutateAsync({ id: contact?.id, data }))
     } catch (e) {
@@ -77,7 +107,7 @@ export function ContactForm({
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
         <FormRow id="contact-first" label="First name" error={errors.first_name?.message}>
-          <Input id="contact-first" autoFocus aria-invalid={!!errors.first_name} {...register('first_name')} />
+          <Input id="contact-first" aria-invalid={!!errors.first_name} {...register('first_name')} />
         </FormRow>
         <FormRow id="contact-last" label="Last name" error={errors.last_name?.message}>
           <Input id="contact-last" aria-invalid={!!errors.last_name} {...register('last_name')} />

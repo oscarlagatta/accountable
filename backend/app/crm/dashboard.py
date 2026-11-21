@@ -1,12 +1,13 @@
 """Everything the dashboard shows, worked out from the database on each request."""
 
 from datetime import date
+from typing import TypedDict
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy import Connection, select
 
 from backend.app.core import clock
-from backend.app.core.db import get_conn
+from backend.app.core.db import DbConn
 
 from . import stages
 from .activities.service import entries_query
@@ -28,13 +29,29 @@ def last_12_months(today: date) -> list[tuple[int, int]]:
     return out[::-1]
 
 
+class Month(TypedDict):
+    month: str
+    label: str
+    year: int
+    won_value: int
+    won_count: int
+    lost_count: int
+
+
 def _month_key(y: int, m: int) -> str:
     return f"{y:04d}-{m:02d}"
 
 
-def summary_and_months(all_deals: list[dict], today: date) -> tuple[dict, list[dict]]:
-    months = [
-        {"month": _month_key(y, m), "label": MONTH_LABELS[m - 1], "year": y, "won_value": 0, "won_count": 0, "lost_count": 0}
+def summary_and_months(all_deals: list[dict], today: date) -> tuple[dict, list[Month]]:
+    months: list[Month] = [
+        {
+            "month": _month_key(y, m),
+            "label": MONTH_LABELS[m - 1],
+            "year": y,
+            "won_value": 0,
+            "won_count": 0,
+            "lost_count": 0,
+        }
         for y, m in last_12_months(today)
     ]
     by_key = {mo["month"]: mo for mo in months}
@@ -69,13 +86,15 @@ def strip(all_deals: list[dict]) -> list[dict]:
     out = []
     for key in stages.OPEN_KEYS:
         ds = [d for d in all_deals if d["stage"] == key]
-        out.append({
-            "stage": key,
-            "label": stages.label(key),
-            "count": len(ds),
-            "value": sum(d["value"] for d in ds),
-            "expected": sum(expected_revenue(d["value"], d["probability"]) for d in ds),
-        })
+        out.append(
+            {
+                "stage": key,
+                "label": stages.label(key),
+                "count": len(ds),
+                "value": sum(d["value"] for d in ds),
+                "expected": sum(expected_revenue(d["value"], d["probability"]) for d in ds),
+            }
+        )
     return out
 
 
@@ -99,13 +118,15 @@ def funnel(all_deals: list[dict], history: list[dict]) -> list[dict]:
         reached = [d for d in all_deals if furthest.get(d["id"], 0) >= i]
         value = sum(d["value"] for d in reached)
         prev = out[-1]["value"] if out else None
-        out.append({
-            "stage": key,
-            "label": stages.label(key),
-            "count": len(reached),
-            "value": value,
-            "share": (round(value / prev * 100) if prev else 0) if prev is not None else None,
-        })
+        out.append(
+            {
+                "stage": key,
+                "label": stages.label(key),
+                "count": len(reached),
+                "value": value,
+                "share": (round(value / prev * 100) if prev else 0) if prev is not None else None,
+            }
+        )
     return out
 
 
@@ -131,11 +152,18 @@ def recent(conn: Connection, limit: int = 10) -> list[dict]:
 
 def dashboard(conn: Connection) -> dict:
     today = clock.today()
-    all_deals = [dict(r) for r in conn.execute(select(deals.c.id, deals.c.stage, deals.c.value, deals.c.probability, deals.c.close_date)).mappings()]
+    all_deals = [
+        dict(r)
+        for r in conn.execute(
+            select(deals.c.id, deals.c.stage, deals.c.value, deals.c.probability, deals.c.close_date)
+        ).mappings()
+    ]
     history = [
         dict(r)
         for r in conn.execute(
-            select(activities.c.deal_id, activities.c.from_stage, activities.c.to_stage).where(activities.c.kind == "stage_change")
+            select(activities.c.deal_id, activities.c.from_stage, activities.c.to_stage).where(
+                activities.c.kind == "stage_change"
+            )
         ).mappings()
     ]
     summary, months = summary_and_months(all_deals, today)
@@ -154,5 +182,5 @@ def dashboard(conn: Connection) -> dict:
 
 
 @router.get("")
-def get_dashboard(conn: Connection = Depends(get_conn)):
+def get_dashboard(conn: DbConn):
     return dashboard(conn)

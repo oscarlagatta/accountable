@@ -12,7 +12,12 @@ def column(client, stage):
 def setup_column(client, stage, names):
     ids = []
     for name in reversed(names):  # each new deal goes to the top
-        ids.insert(0, client.post("/api/deals", json={"name": name, "value": 1000, "close_date": "2026-12-01", "stage": stage}).json()["id"])
+        ids.insert(
+            0,
+            client.post(
+                "/api/deals", json={"name": name, "value": 1000, "close_date": "2026-12-01", "stage": stage}
+            ).json()["id"],
+        )
     return ids
 
 
@@ -81,7 +86,11 @@ def test_order_survives_a_new_connection(client):
     client.post(f"/api/deals/{ids[0]}/move", json={"stage": "negotiation", "index": 2})
     db.dispose_all()
     with db.get_engine().connect() as conn:
-        stored = conn.execute(select(deals.c.name).where(deals.c.stage == "negotiation").order_by(deals.c.position)).scalars().all()
+        stored = (
+            conn.execute(select(deals.c.name).where(deals.c.stage == "negotiation").order_by(deals.c.position))
+            .scalars()
+            .all()
+        )
     assert stored == ["B", "C", "A"]
 
 

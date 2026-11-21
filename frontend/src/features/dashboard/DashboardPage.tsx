@@ -53,8 +53,14 @@ export function DashboardPage() {
         <p className="text-ink-muted">Loading…</p>
       ) : null}
 
-      <RecordSheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)} title={sheet === 'activity' ? 'Log activity' : 'Add deal'}>
-        {sheet === 'activity' ? <ActivityForm pickTarget onDone={() => setSheet(null)} onCancel={() => setSheet(null)} /> : null}
+      <RecordSheet
+        open={sheet !== null}
+        onOpenChange={(o) => !o && setSheet(null)}
+        title={sheet === 'activity' ? 'Log activity' : 'Add deal'}
+      >
+        {sheet === 'activity' ? (
+          <ActivityForm pickTarget onDone={() => setSheet(null)} onCancel={() => setSheet(null)} />
+        ) : null}
         {sheet === 'deal' ? (
           <DealForm
             onCancel={() => setSheet(null)}

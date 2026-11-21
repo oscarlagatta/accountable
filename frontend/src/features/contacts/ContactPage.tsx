@@ -25,8 +25,18 @@ export function ContactPage() {
   const [sheet, setSheet] = useState<'edit' | 'deal' | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  if (contact.error instanceof ApiError && contact.error.status === 404) return <NotFoundMessage what="Contact" back={{ to: '/contacts', label: 'Back to contacts' }} />
-  if (!contact.data) return <Page>{contact.isError ? <p className="text-raspberry-ink">Couldn't load this contact.</p> : <p className="text-ink-muted">Loading…</p>}</Page>
+  if (contact.error instanceof ApiError && contact.error.status === 404)
+    return <NotFoundMessage what="Contact" back={{ to: '/contacts', label: 'Back to contacts' }} />
+  if (!contact.data)
+    return (
+      <Page>
+        {contact.isError ? (
+          <p className="text-raspberry-ink">Couldn't load this contact.</p>
+        ) : (
+          <p className="text-ink-muted">Loading…</p>
+        )}
+      </Page>
+    )
   const c = contact.data
 
   return (
@@ -62,9 +72,23 @@ export function ContactPage() {
             <PanelTitle>Details</PanelTitle>
             <Details
               items={[
-                { label: 'Organization', value: c.organization_id ? <RecordLink to={`/organizations/${c.organization_id}`}>{c.organization_name}</RecordLink> : 'None' },
+                {
+                  label: 'Organization',
+                  value: c.organization_id ? (
+                    <RecordLink to={`/organizations/${c.organization_id}`}>{c.organization_name}</RecordLink>
+                  ) : (
+                    'None'
+                  ),
+                },
                 { label: 'Job title', value: c.job_title },
-                { label: 'Email', value: c.email ? <a className="text-cerulean-ink hover:underline" href={`mailto:${c.email}`}>{c.email}</a> : null },
+                {
+                  label: 'Email',
+                  value: c.email ? (
+                    <a className="text-cerulean-ink hover:underline" href={`mailto:${c.email}`}>
+                      {c.email}
+                    </a>
+                  ) : null,
+                },
                 { label: 'Phone', value: c.phone ? <span className="font-mono text-[13px]">{c.phone}</span> : null },
                 { label: 'Status', value: <StatusBadge status={c.status} /> },
               ]}
@@ -95,7 +119,11 @@ export function ContactPage() {
         </div>
       </div>
 
-      <RecordSheet open={sheet !== null} onOpenChange={(open) => !open && setSheet(null)} title={sheet === 'edit' ? 'Edit contact' : 'Add deal'}>
+      <RecordSheet
+        open={sheet !== null}
+        onOpenChange={(open) => !open && setSheet(null)}
+        title={sheet === 'edit' ? 'Edit contact' : 'Add deal'}
+      >
         {sheet === 'edit' ? (
           <ContactForm
             contact={c}

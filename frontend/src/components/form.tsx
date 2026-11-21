@@ -3,7 +3,19 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { ApiError } from '@/lib/api'
 
 /** A labelled field with its error underneath, in darkened Raspberry. */
-export function FormRow({ id, label, error, children, optional }: { id: string; label: string; error?: string; children: ReactNode; optional?: boolean }) {
+export function FormRow({
+  id,
+  label,
+  error,
+  children,
+  optional,
+}: {
+  id: string
+  label: string
+  error?: string
+  children: ReactNode
+  optional?: boolean
+}) {
   return (
     <Field data-invalid={Boolean(error)} className="gap-1.5">
       <FieldLabel htmlFor={id} className="text-[13px] font-medium text-ink">
@@ -21,7 +33,11 @@ export function FormRow({ id, label, error, children, optional }: { id: string; 
 }
 
 /** Puts the server's per-field messages on the form, and returns any message that has no field. */
-export function applyServerErrors(error: unknown, setError: (field: never, e: { message: string }) => void, fields: string[]): string | null {
+export function applyServerErrors(
+  error: unknown,
+  setError: (field: never, e: { message: string }) => void,
+  fields: string[],
+): string | null {
   if (error instanceof ApiError) {
     const unplaced: string[] = []
     for (const [field, message] of Object.entries(error.fields)) {

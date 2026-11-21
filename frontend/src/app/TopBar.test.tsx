@@ -16,7 +16,13 @@ describe('TopBar', () => {
     const nav = screen.getByRole('navigation', { name: 'Sections' })
     const links = within(nav).getAllByRole('link')
     expect(links.map((l) => l.textContent)).toEqual(['Dashboard', 'Organizations', 'Contacts', 'Deals', 'Pipeline'])
-    expect(links.map((l) => l.getAttribute('href'))).toEqual(['/', '/organizations', '/contacts', '/deals', '/pipeline'])
+    expect(links.map((l) => l.getAttribute('href'))).toEqual([
+      '/',
+      '/organizations',
+      '/contacts',
+      '/deals',
+      '/pipeline',
+    ])
   })
 
   it('[R44] marks the current section, including on record pages', () => {

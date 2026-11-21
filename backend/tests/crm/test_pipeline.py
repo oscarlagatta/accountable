@@ -23,7 +23,11 @@ def test_open_totals_leave_out_won_and_lost(client, make):
     make.deal("proposal", value=20000)
     make.deal("won", value=50000)
     make.deal("lost", value=7000)
-    assert client.get("/api/pipeline").json()["totals"] == {"open_count": 2, "open_value": 30000, "open_expected": 500 + 8000}
+    assert client.get("/api/pipeline").json()["totals"] == {
+        "open_count": 2,
+        "open_value": 30000,
+        "open_expected": 500 + 8000,
+    }
 
 
 def test_stage_list(client):

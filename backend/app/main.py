@@ -35,7 +35,14 @@ def create_app() -> FastAPI:
     from backend.app.crm.deals.router import router as deals_router
     from backend.app.crm.organizations.router import router as organizations_router
 
-    for router in (organizations_router, contacts_router, deals_router, activities_router, pipeline.router, dashboard.router):
+    for router in (
+        organizations_router,
+        contacts_router,
+        deals_router,
+        activities_router,
+        pipeline.router,
+        dashboard.router,
+    ):
         app.include_router(router, prefix="/api")
 
     @app.get("/api/health")

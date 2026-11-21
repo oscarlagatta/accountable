@@ -64,43 +64,114 @@ NOTES = [
 ]
 
 JOB_TITLES = [
-    "Operations Director", "IT Manager", "Chief Financial Officer", "Head of Procurement", "Practice Manager",
-    "General Manager", "Project Lead", "Chief Operating Officer", "Office Manager", "Systems Administrator",
-    "VP of Sales", "Facilities Manager", "Head of Digital", "Finance Manager", "Owner",
+    "Operations Director",
+    "IT Manager",
+    "Chief Financial Officer",
+    "Head of Procurement",
+    "Practice Manager",
+    "General Manager",
+    "Project Lead",
+    "Chief Operating Officer",
+    "Office Manager",
+    "Systems Administrator",
+    "VP of Sales",
+    "Facilities Manager",
+    "Head of Digital",
+    "Finance Manager",
+    "Owner",
 ]
 
 DEAL_NAMES = [
-    "Fleet tracking pilot", "Patient intake portal", "Inventory sync add-on", "Staff training package",
-    "Data warehouse scoping", "Claims workflow rebuild", "Campus booking system", "Route optimization",
-    "Loyalty app refresh", "ERP integration", "Telehealth module", "Guest Wi-Fi analytics",
-    "Student records migration", "Managed support renewal", "Warehouse scanners rollout", "Quality dashboard",
-    "Booking engine upgrade", "Billing automation", "Security audit", "Mobile ordering app", "Fleet telematics",
-    "Cloud backup plan", "Point of sale upgrade", "Scheduling assistant", "Compliance reporting",
-    "Customer portal", "Network refresh", "Payroll integration", "Website rebuild", "Help desk outsourcing",
-    "Document management", "Supplier portal", "Energy monitoring", "Visitor check-in kiosks",
-    "Reporting workshop", "Annual support contract", "Pricing tool", "Shift planning module",
-    "Field service app", "Data cleanup project",
+    "Fleet tracking pilot",
+    "Patient intake portal",
+    "Inventory sync add-on",
+    "Staff training package",
+    "Data warehouse scoping",
+    "Claims workflow rebuild",
+    "Campus booking system",
+    "Route optimization",
+    "Loyalty app refresh",
+    "ERP integration",
+    "Telehealth module",
+    "Guest Wi-Fi analytics",
+    "Student records migration",
+    "Managed support renewal",
+    "Warehouse scanners rollout",
+    "Quality dashboard",
+    "Booking engine upgrade",
+    "Billing automation",
+    "Security audit",
+    "Mobile ordering app",
+    "Fleet telematics",
+    "Cloud backup plan",
+    "Point of sale upgrade",
+    "Scheduling assistant",
+    "Compliance reporting",
+    "Customer portal",
+    "Network refresh",
+    "Payroll integration",
+    "Website rebuild",
+    "Help desk outsourcing",
+    "Document management",
+    "Supplier portal",
+    "Energy monitoring",
+    "Visitor check-in kiosks",
+    "Reporting workshop",
+    "Annual support contract",
+    "Pricing tool",
+    "Shift planning module",
+    "Field service app",
+    "Data cleanup project",
 ]
 
 NOTE_TEXTS = [
-    "Agreed scope for phase one", "Shared the draft timeline", "Board meets on the 20th, decision after",
-    "Wants references from a similar client", "Budget confirmed for next quarter", "Asked about data migration",
-    "Raised concerns about rollout timing", "Internal champion is pushing for it", "Legal is reviewing the terms",
+    "Agreed scope for phase one",
+    "Shared the draft timeline",
+    "Board meets on the 20th, decision after",
+    "Wants references from a similar client",
+    "Budget confirmed for next quarter",
+    "Asked about data migration",
+    "Raised concerns about rollout timing",
+    "Internal champion is pushing for it",
+    "Legal is reviewing the terms",
     "Prefers a fixed price over time and materials",
 ]
 CALL_TEXTS = [
-    "Intro call with the team", "Call about budget sign-off", "Walked through the proposal", "Discovery call",
-    "Check-in on the pilot", "Call to discuss pricing", "Quick call about next steps", "Demo for the wider team",
+    "Intro call with the team",
+    "Call about budget sign-off",
+    "Walked through the proposal",
+    "Discovery call",
+    "Check-in on the pilot",
+    "Call to discuss pricing",
+    "Quick call about next steps",
+    "Demo for the wider team",
 ]
 EMAIL_TEXTS = [
-    "Sent pricing for 3-year term", "Sent revised SOW", "Sent case studies", "Followed up on the proposal",
-    "Sent meeting notes", "Shared the onboarding plan", "Sent the contract for review", "Replied to security questions",
+    "Sent pricing for 3-year term",
+    "Sent revised SOW",
+    "Sent case studies",
+    "Followed up on the proposal",
+    "Sent meeting notes",
+    "Shared the onboarding plan",
+    "Sent the contract for review",
+    "Replied to security questions",
 ]
 FOLLOW_UP_TEXTS = [
-    "Chase signed renewal", "Prep negotiation call", "Demo for clinical leads", "Check in after pilot",
-    "Send revised SOW", "Call about budget sign-off", "Send case studies", "Book on-site visit",
-    "Confirm start date", "Share updated quote", "Follow up on references", "Ask for decision timeline",
-    "Send onboarding pack", "Review contract changes", "Schedule kickoff",
+    "Chase signed renewal",
+    "Prep negotiation call",
+    "Demo for clinical leads",
+    "Check in after pilot",
+    "Send revised SOW",
+    "Call about budget sign-off",
+    "Send case studies",
+    "Book on-site visit",
+    "Confirm start date",
+    "Share updated quote",
+    "Follow up on references",
+    "Ask for decision timeline",
+    "Send onboarding pack",
+    "Review contract changes",
+    "Schedule kickoff",
 ]
 
 
@@ -115,8 +186,12 @@ class Volumes:
     overdue_follow_ups: int
 
 
-SAMPLE = Volumes(organizations=25, contacts=120, deals=80, activities=120, late=5, upcoming_follow_ups=10, overdue_follow_ups=5)
-SCALE = Volumes(organizations=150, contacts=1000, deals=500, activities=4200, late=20, upcoming_follow_ups=40, overdue_follow_ups=20)
+SAMPLE = Volumes(
+    organizations=25, contacts=120, deals=80, activities=120, late=5, upcoming_follow_ups=10, overdue_follow_ups=5
+)
+SCALE = Volumes(
+    organizations=150, contacts=1000, deals=500, activities=4200, late=20, upcoming_follow_ups=40, overdue_follow_ups=20
+)
 
 
 def _iso_dt(d: date, rng: random.Random) -> str:
@@ -135,107 +210,152 @@ def _value(rng: random.Random) -> int:
     return int(round(raw / 500) * 500)
 
 
-def generate(today: date, now: datetime, volumes: Volumes = SAMPLE) -> dict[str, list[dict]]:
-    """Build every row in memory. Ids are assigned here so rows can refer to each other."""
-    rng = random.Random(SEED)
-    fake = Faker("en_US")
-    fake.seed_instance(SEED)
+def _stamp(d: date, rng: random.Random) -> dict:
+    s = _iso_dt(d, rng)
+    return {"created_at": s, "updated_at": s}
 
-    def stamp(d: date) -> dict:
-        s = _iso_dt(d, rng)
-        return {"created_at": s, "updated_at": s}
 
-    # Organizations
+def _organizations(count: int, today: date, rng: random.Random, fake: Faker) -> list[dict]:
     orgs: list[dict] = []
-    for i in range(volumes.organizations):
+    for i in range(count):
         if i < len(COMPANIES):
             name, industry = COMPANIES[i]
         else:
-            name, industry = f"{fake.last_name()} {rng.choice(['Partners', 'Holdings', 'Services', 'Labs', 'Group'])}", rng.choice(INDUSTRIES)
-        orgs.append({
-            "id": i + 1, "name": name, "industry": industry, "website": f"https://www.{_domain(name)}",
-            "notes": rng.choice(NOTES) or None, **stamp(today - timedelta(days=rng.randint(200, 400))),
-        })
+            name, industry = (
+                f"{fake.last_name()} {rng.choice(['Partners', 'Holdings', 'Services', 'Labs', 'Group'])}",
+                rng.choice(INDUSTRIES),
+            )
+        orgs.append(
+            {
+                "id": i + 1,
+                "name": name,
+                "industry": industry,
+                "website": f"https://www.{_domain(name)}",
+                "notes": rng.choice(NOTES) or None,
+                **_stamp(today - timedelta(days=rng.randint(200, 400)), rng),
+            }
+        )
+    return orgs
 
-    # Contacts: most at organizations, a few with none; all three statuses
+
+def _contacts(count: int, orgs: list[dict], today: date, rng: random.Random, fake: Faker) -> list[dict]:
+    """Most at organizations, a few with none; all three statuses."""
     people: list[dict] = []
-    no_org = max(4, volumes.contacts // 15)
-    for i in range(volumes.contacts):
+    no_org = max(4, count // 15)
+    for i in range(count):
         first, last = fake.first_name(), fake.last_name()
-        org = None if i >= volumes.contacts - no_org else orgs[i % len(orgs)]
+        org = None if i >= count - no_org else orgs[i % len(orgs)]
         roll = rng.random()
         status = "lead" if roll < 0.4 else "qualified" if roll < 0.65 else "customer"
         domain = _domain(org["name"]) if org else rng.choice(["mailbox.example.com", "inbox.example.com"])
-        people.append({
-            "id": i + 1, "first_name": first, "last_name": last,
-            "email": f"{first.lower()}.{last.lower()}@{domain}".replace("'", ""),
-            "phone": f"({rng.randint(201, 989)}) 555-{rng.randint(100, 199):03d}{rng.randint(0, 9)}",
-            "job_title": rng.choice(JOB_TITLES), "organization_id": org["id"] if org else None, "status": status,
-            **stamp(today - timedelta(days=rng.randint(30, 380))),
-        })
+        people.append(
+            {
+                "id": i + 1,
+                "first_name": first,
+                "last_name": last,
+                "email": f"{first.lower()}.{last.lower()}@{domain}".replace("'", ""),
+                "phone": f"({rng.randint(201, 989)}) 555-{rng.randint(100, 199):03d}{rng.randint(0, 9)}",
+                "job_title": rng.choice(JOB_TITLES),
+                "organization_id": org["id"] if org else None,
+                "status": status,
+                **_stamp(today - timedelta(days=rng.randint(30, 380)), rng),
+            }
+        )
+    return people
+
+
+def _deal_name(i: int, rng: random.Random, used_names: set[str]) -> str:
+    """The hand-written names first, then variations of them, never repeating."""
+    if i < len(DEAL_NAMES):
+        name = DEAL_NAMES[i]
+    else:
+        base = rng.choice(DEAL_NAMES)
+        suffixes = ["phase two", "extension", "pilot", "renewal", "rollout", "phase three", "add-on", "expansion"]
+        name = next((f"{base} {sfx}" for sfx in suffixes if f"{base} {sfx}" not in used_names), f"{base} {i}")
+    used_names.add(name)
+    return name
+
+
+@dataclass
+class _DealQuotas:
+    """How many more late deals and deals won this month the sample still needs."""
+
+    late: int
+    won_this_month: int
+
+
+def _closed_deal_dates(
+    stage: str, today: date, rng: random.Random, quotas: _DealQuotas
+) -> tuple[date, list[str], date, date]:
+    """Close date, stage path, created date and last-change date for a won or lost deal."""
+    start_of_month = today.replace(day=1)
+    if stage == "won" and quotas.won_this_month > 0:
+        quotas.won_this_month -= 1
+        # One draw whatever the date, so the rest of the sequence doesn't shift.
+        close = start_of_month + timedelta(days=int(rng.random() * ((today - start_of_month).days + 1)))
+    else:
+        close = today - timedelta(days=rng.randint(1, 360))
+    # Where the deal got to before it closed
+    if stage == "won":
+        path = ["new", "qualified", "proposal", "negotiation", "won"]
+    else:
+        dropped_at = rng.choices(["new", "qualified", "proposal", "negotiation"], weights=[3, 3, 3, 2])[0]
+        path = stages.FUNNEL_KEYS[: stages.FUNNEL_KEYS.index(dropped_at) + 1] + ["lost"]
+    created = close - timedelta(days=rng.randint(20, 100))
+    return close, path, created, close
+
+
+def _open_deal_dates(
+    stage: str, today: date, rng: random.Random, quotas: _DealQuotas
+) -> tuple[date, list[str], date, date]:
+    """Close date, stage path, created date and last-change date for an open deal."""
+    if quotas.late > 0:
+        quotas.late -= 1
+        close = today - timedelta(days=rng.randint(2, 25))
+    else:
+        close = today + timedelta(days=rng.randint(3, 130))
+    path = stages.FUNNEL_KEYS[: stages.FUNNEL_KEYS.index(stage) + 1]
+    created = today - timedelta(days=rng.randint(len(path) * 6, 160))
+    return close, path, created, today - timedelta(days=1)
+
+
+def _change_days(stage: str, steps: int, span: int, rng: random.Random) -> list[int]:
+    """Days after creation of each stage change; for a closed deal the last one lands on `span`."""
+    days = sorted(rng.sample(range(1, span + 1), steps)) if steps and span >= steps else list(range(1, steps + 1))
+    if steps:
+        days[-1] = span if stage in ("won", "lost") else days[-1]
+    return days
+
+
+def _deals(
+    volumes: Volumes, orgs: list[dict], people: list[dict], today: date, rng: random.Random
+) -> tuple[list[dict], list[dict]]:
+    """Won and lost over the past 12 months, open across the four open stages, with their stage changes."""
     by_org: dict[int, list[dict]] = {}
     for p in people:
         if p["organization_id"]:
             by_org.setdefault(p["organization_id"], []).append(p)
 
-    # Deals: won and lost over the past 12 months, open across the four open stages
     n = volumes.deals
     n_won, n_lost = round(n * 0.28), round(n * 0.17)
     n_open = n - n_won - n_lost
     open_stages = [stages.OPEN_KEYS[i % 4] for i in range(n_open)]
     plan = ["won"] * n_won + ["lost"] * n_lost + open_stages
     rng.shuffle(plan)
-    late_left = volumes.late
+    quotas = _DealQuotas(late=volumes.late, won_this_month=max(2, n // 40))
     no_org_deals = max(2, n // 40)
-    start_of_month = today.replace(day=1)
-    won_this_month_needed = max(2, n // 40)
-
     used_names: set[str] = set()
 
-    def deal_name(i: int) -> str:
-        """The hand-written names first, then variations of them, never repeating."""
-        if i < len(DEAL_NAMES):
-            name = DEAL_NAMES[i]
-        else:
-            base = rng.choice(DEAL_NAMES)
-            suffixes = ["phase two", "extension", "pilot", "renewal", "rollout", "phase three", "add-on", "expansion"]
-            name = next((f"{base} {sfx}" for sfx in suffixes if f"{base} {sfx}" not in used_names), f"{base} {i}")
-        used_names.add(name)
-        return name
-
     deal_rows: list[dict] = []
-    stage_changes: list[dict] = []  # (deal row, from, to, date)
+    stage_changes: list[dict] = []
     for i, stage in enumerate(plan):
-        deal_id = i + 1
         org = None if i < no_org_deals else orgs[rng.randrange(len(orgs))]
         candidates = by_org.get(org["id"], []) if org else []
         contact = rng.choice(candidates) if candidates else rng.choice(people)
         value = _value(rng)
 
-        if stage in ("won", "lost"):
-            if stage == "won" and won_this_month_needed > 0:
-                won_this_month_needed -= 1
-                # One draw whatever the date, so the rest of the sequence doesn't shift.
-                close = start_of_month + timedelta(days=int(rng.random() * ((today - start_of_month).days + 1)))
-            else:
-                close = today - timedelta(days=rng.randint(1, 360))
-            # Where the deal got to before it closed
-            if stage == "won":
-                path = ["new", "qualified", "proposal", "negotiation", "won"]
-            else:
-                dropped_at = rng.choices(["new", "qualified", "proposal", "negotiation"], weights=[3, 3, 3, 2])[0]
-                path = stages.FUNNEL_KEYS[: stages.FUNNEL_KEYS.index(dropped_at) + 1] + ["lost"]
-            created = close - timedelta(days=rng.randint(20, 100))
-            end = close
-        else:
-            if late_left > 0:
-                late_left -= 1
-                close = today - timedelta(days=rng.randint(2, 25))
-            else:
-                close = today + timedelta(days=rng.randint(3, 130))
-            path = stages.FUNNEL_KEYS[: stages.FUNNEL_KEYS.index(stage) + 1]
-            created = today - timedelta(days=rng.randint(len(path) * 6, 160))
-            end = today - timedelta(days=1)
+        dates = _closed_deal_dates if stage in ("won", "lost") else _open_deal_dates
+        close, path, created, end = dates(stage, today, rng, quotas)
 
         # A few deals were created straight into a later stage.
         if len(path) > 2 and rng.random() < 0.15:
@@ -245,51 +365,116 @@ def generate(today: date, now: datetime, volumes: Volumes = SAMPLE) -> dict[str,
 
         # Dates of each stage change, spread between created and end (the last change lands on `end`).
         steps = len(path) - 1
-        span = (end - created).days
-        change_days = sorted(rng.sample(range(1, span + 1), steps)) if steps and span >= steps else list(range(1, steps + 1))
-        if steps:
-            change_days[-1] = span if stage in ("won", "lost") else change_days[-1]
+        change_days = _change_days(stage, steps, (end - created).days, rng)
         probability = stages.default_probability(stage)
         if stage in stages.OPEN_KEYS and rng.random() < 0.06:
             probability = min(95, probability + rng.choice([5, 10, 15]))
 
         row = {
-            "id": deal_id, "name": deal_name(i),
-            "organization_id": org["id"] if org else None, "contact_id": contact["id"], "stage": stage,
-            "value": value, "probability": probability, "close_date": close.isoformat(), "position": 0,
-            **stamp(created),
+            "id": i + 1,
+            "name": _deal_name(i, rng, used_names),
+            "organization_id": org["id"] if org else None,
+            "contact_id": contact["id"],
+            "stage": stage,
+            "value": value,
+            "probability": probability,
+            "close_date": close.isoformat(),
+            "position": 0,
+            **_stamp(created, rng),
         }
         deal_rows.append(row)
         for k in range(steps):
-            stage_changes.append({"deal": row, "from": path[k], "to": path[k + 1], "on": created + timedelta(days=change_days[k])})
+            stage_changes.append(
+                {"deal": row, "from": path[k], "to": path[k + 1], "on": created + timedelta(days=change_days[k])}
+            )
+    _set_positions(deal_rows)
+    return deal_rows, stage_changes
 
-    # Positions: open columns by close date, closed columns most recent first
+
+def _set_positions(deal_rows: list[dict]) -> None:
+    """Open columns by close date, closed columns most recent first."""
     for key in stages.KEYS:
         column = [d for d in deal_rows if d["stage"] == key]
         column.sort(key=lambda d: d["close_date"], reverse=key in stages.CLOSED_KEYS)
         for pos, d in enumerate(column):
             d["position"] = pos
 
-    # Activities
-    acts: list[dict] = []
 
-    def add_activity(**fields) -> dict:
-        row = {"id": len(acts) + 1, "contact_id": None, "deal_id": None, "from_stage": None, "to_stage": None,
-               "follow_up_date": None, "done": False, **fields}
-        row.setdefault("created_at", row["occurred_at"])
-        row.setdefault("updated_at", row["occurred_at"])
-        acts.append(row)
-        return row
+def _add_activity(acts: list[dict], **fields) -> dict:
+    row = {
+        "id": len(acts) + 1,
+        "contact_id": None,
+        "deal_id": None,
+        "from_stage": None,
+        "to_stage": None,
+        "follow_up_date": None,
+        "done": False,
+        **fields,
+    }
+    row.setdefault("created_at", row["occurred_at"])
+    row.setdefault("updated_at", row["occurred_at"])
+    acts.append(row)
+    return row
 
+
+def _add_stage_changes(
+    acts: list[dict], stage_changes: list[dict], today: date, now: datetime, rng: random.Random
+) -> None:
     for sc in stage_changes:
         on = min(sc["on"], today)
         occurred = _iso_dt(on, rng)
         if occurred > now.isoformat():
             occurred = (now - timedelta(minutes=rng.randint(5, 120))).isoformat()
-        add_activity(kind="stage_change", deal_id=sc["deal"]["id"], from_stage=sc["from"], to_stage=sc["to"],
-                     description=f"Moved from {stages.label(sc['from'])} to {stages.label(sc['to'])}", occurred_at=occurred)
+        _add_activity(
+            acts,
+            kind="stage_change",
+            deal_id=sc["deal"]["id"],
+            from_stage=sc["from"],
+            to_stage=sc["to"],
+            description=f"Moved from {stages.label(sc['from'])} to {stages.label(sc['to'])}",
+            occurred_at=occurred,
+        )
 
+
+def _follow_up_entry(
+    fu_kind: str, k: int, volumes: Volumes, on_deal: bool, open_deals: list[dict], today: date, rng: random.Random
+) -> tuple[date, dict | None, str, date | None, bool]:
+    """Day, deal, description, due date and done for an activity with an open follow-up."""
+    # Open follow-ups sit on recent activities.
+    occurred_day = today - timedelta(days=rng.randint(1, 10) if fu_kind == "upcoming" else rng.randint(14, 30))
+    if fu_kind == "upcoming":
+        # One due today, the rest over the next two weeks.
+        due = today if k == 0 else today + timedelta(days=1 + (k * 13) // max(1, volumes.upcoming_follow_ups))
+    else:
+        due = today - timedelta(days=rng.randint(1, 12))
+    target = rng.choice(open_deals) if on_deal and open_deals else None
+    return occurred_day, target, rng.choice(FOLLOW_UP_TEXTS), due, False
+
+
+def _plain_entry(
+    kind: str, on_deal: bool, deal_rows: list[dict], today: date, rng: random.Random
+) -> tuple[date, dict | None, str, date | None, bool]:
+    """Day, deal, description, due date and done for an activity without an open follow-up."""
     texts = {"note": NOTE_TEXTS, "call": CALL_TEXTS, "email": EMAIL_TEXTS}
+    occurred_day = today - timedelta(days=rng.randint(0, 360))
+    target = rng.choice(deal_rows) if on_deal else None
+    description = rng.choice(texts[kind])
+    due, done = None, False
+    # Some older activities had follow-ups that were done.
+    if rng.random() < 0.15 and occurred_day < today - timedelta(days=7):
+        due, done = occurred_day + timedelta(days=rng.randint(2, 7)), True
+    return occurred_day, target, description, due, done
+
+
+def _add_regular_activities(
+    acts: list[dict],
+    volumes: Volumes,
+    deal_rows: list[dict],
+    people: list[dict],
+    today: date,
+    now: datetime,
+    rng: random.Random,
+) -> None:
     open_deals = [d for d in deal_rows if d["stage"] in stages.OPEN_KEYS]
     follow_ups = ["upcoming"] * volumes.upcoming_follow_ups + ["overdue"] * volumes.overdue_follow_ups
     for k in range(volumes.activities):
@@ -297,31 +482,37 @@ def generate(today: date, now: datetime, volumes: Volumes = SAMPLE) -> dict[str,
         on_deal = rng.random() < 0.45
         fu_kind = follow_ups[k] if k < len(follow_ups) else None
         if fu_kind:
-            # Open follow-ups sit on recent activities.
-            occurred_day = today - timedelta(days=rng.randint(1, 10) if fu_kind == "upcoming" else rng.randint(14, 30))
-            if fu_kind == "upcoming":
-                # One due today, the rest over the next two weeks.
-                due = today if k == 0 else today + timedelta(days=1 + (k * 13) // max(1, volumes.upcoming_follow_ups))
-            else:
-                due = today - timedelta(days=rng.randint(1, 12))
-            target = rng.choice(open_deals) if on_deal and open_deals else None
-            description = rng.choice(FOLLOW_UP_TEXTS)
-            done = False
+            entry = _follow_up_entry(fu_kind, k, volumes, on_deal, open_deals, today, rng)
         else:
-            occurred_day = today - timedelta(days=rng.randint(0, 360))
-            target = rng.choice(deal_rows) if on_deal else None
-            description = rng.choice(texts[kind])
-            due, done = None, False
-            # Some older activities had follow-ups that were done.
-            if rng.random() < 0.15 and occurred_day < today - timedelta(days=7):
-                due, done = occurred_day + timedelta(days=rng.randint(2, 7)), True
+            entry = _plain_entry(kind, on_deal, deal_rows, today, rng)
+        occurred_day, target, description, due, done = entry
         occurred = _iso_dt(occurred_day, rng)
         if occurred > now.isoformat():
             occurred = (now - timedelta(minutes=rng.randint(5, 240))).replace(microsecond=0).isoformat()
         fields = {"deal_id": target["id"]} if target else {"contact_id": rng.choice(people)["id"]}
-        add_activity(kind=kind, description=description, occurred_at=occurred,
-                     follow_up_date=due.isoformat() if due else None, done=done, **fields)
+        _add_activity(
+            acts,
+            kind=kind,
+            description=description,
+            occurred_at=occurred,
+            follow_up_date=due.isoformat() if due else None,
+            done=done,
+            **fields,
+        )
 
+
+def generate(today: date, now: datetime, volumes: Volumes = SAMPLE) -> dict[str, list[dict]]:
+    """Build every row in memory. Ids are assigned here so rows can refer to each other."""
+    rng = random.Random(SEED)
+    fake = Faker("en_US")
+    fake.seed_instance(SEED)
+
+    orgs = _organizations(volumes.organizations, today, rng, fake)
+    people = _contacts(volumes.contacts, orgs, today, rng, fake)
+    deal_rows, stage_changes = _deals(volumes, orgs, people, today, rng)
+    acts: list[dict] = []
+    _add_stage_changes(acts, stage_changes, today, now, rng)
+    _add_regular_activities(acts, volumes, deal_rows, people, today, now, rng)
     return {"organizations": orgs, "contacts": people, "deals": deal_rows, "activities": acts}
 
 

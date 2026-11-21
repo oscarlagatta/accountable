@@ -8,9 +8,19 @@ import { cn } from '@/lib/utils'
 type Props = HTMLAttributes<HTMLDivElement> & { deal: Deal; lifted?: boolean; placeholder?: boolean }
 
 /** A deal on the board: name, organization and main contact, value, and close date or "Late". */
-export const Card = forwardRef<HTMLDivElement, Props>(function Card({ deal, lifted = false, placeholder = false, className, ...rest }, ref) {
+export const Card = forwardRef<HTMLDivElement, Props>(function Card(
+  { deal, lifted = false, placeholder = false, className, ...rest },
+  ref,
+) {
   if (placeholder) {
-    return <div ref={ref} {...rest} className="mb-1.5 h-[74px] rounded-md border-2 border-dashed border-ink-faint" aria-hidden />
+    return (
+      <div
+        ref={ref}
+        {...rest}
+        className="mb-1.5 h-[74px] rounded-md border-2 border-dashed border-ink-faint"
+        aria-hidden
+      />
+    )
   }
   const meta = [deal.organization_name, deal.contact_name].filter(Boolean).join(' · ')
   return (
@@ -36,7 +46,11 @@ export const Card = forwardRef<HTMLDivElement, Props>(function Card({ deal, lift
       {meta ? <div className="mt-0.5 text-xs leading-snug text-ink-muted">{meta}</div> : null}
       <div className="mt-2 flex items-center justify-between font-mono text-xs">
         <span className="text-[13px] font-semibold">{money(deal.value)}</span>
-        {deal.late ? <LateLabel /> : <span className="text-[11px] font-medium text-ink-muted">{dateShort(deal.close_date)}</span>}
+        {deal.late ? (
+          <LateLabel />
+        ) : (
+          <span className="text-[11px] font-medium text-ink-muted">{dateShort(deal.close_date)}</span>
+        )}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { renderWithProviders } from '@/test/render'
 import { ConfirmDialog, plural } from './ConfirmDialog'
 
@@ -65,12 +65,27 @@ describe('ConfirmDialog', () => {
     // cache while the dialog is still open, and a re-render would refetch the preview (a 404).
     const loadPreview = vi.fn(async () => ({ name: 'Doomed deal' }))
     let tick: () => void = () => {}
-    function Open() {
+    function Open({ expose }: { expose: (rerender: () => void) => void }) {
       const [, setN] = useState(0)
-      tick = () => setN((n) => n + 1)
-      return <ConfirmDialog open onOpenChange={() => {}} previewKey={['deals', 86]} loadPreview={loadPreview} consequences={() => []} onConfirm={async () => undefined} />
+      useEffect(() => expose(() => setN((n) => n + 1)), [expose])
+      return (
+        <ConfirmDialog
+          open
+          onOpenChange={() => {}}
+          previewKey={['deals', 86]}
+          loadPreview={loadPreview}
+          consequences={() => []}
+          onConfirm={async () => undefined}
+        />
+      )
     }
-    const { client } = renderWithProviders(<Open />)
+    const { client } = renderWithProviders(
+      <Open
+        expose={(rerender) => {
+          tick = rerender
+        }}
+      />,
+    )
     await screen.findByRole('heading', { name: 'Delete Doomed deal?' })
     await userEvent.click(screen.getByRole('button', { name: 'Delete' }))
     client.removeQueries({ queryKey: ['deals', 86] })

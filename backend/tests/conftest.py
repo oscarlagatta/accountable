@@ -84,8 +84,13 @@ class Factory:
     def stage_change(self, deal_id: int, frm: str, to: str, on: date | datetime, **kw) -> int:
         when = on if isinstance(on, datetime) else datetime(on.year, on.month, on.day, 9, 0)
         return self.activity(
-            kind="stage_change", deal_id=deal_id, from_stage=frm, to_stage=to,
-            description=f"Moved from {stages.label(frm)} to {stages.label(to)}", occurred_at=when.isoformat(), **kw,
+            kind="stage_change",
+            deal_id=deal_id,
+            from_stage=frm,
+            to_stage=to,
+            description=f"Moved from {stages.label(frm)} to {stages.label(to)}",
+            occurred_at=when.isoformat(),
+            **kw,
         )
 
 

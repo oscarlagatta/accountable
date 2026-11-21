@@ -8,7 +8,11 @@ def test_newest_first(client, make):
     log(client, contact_id=person, description="middle", occurred_at="2026-11-10T09:00:00")
     log(client, contact_id=person, description="newest", occurred_at="2026-11-14T09:00:00")
     log(client, contact_id=person, description="oldest", occurred_at="2026-10-01T09:00:00")
-    assert [a["description"] for a in client.get(f"/api/contacts/{person}/timeline").json()] == ["newest", "middle", "oldest"]
+    assert [a["description"] for a in client.get(f"/api/contacts/{person}/timeline").json()] == [
+        "newest",
+        "middle",
+        "oldest",
+    ]
 
 
 def test_contact_timeline_includes_its_deals(client, make):
@@ -52,5 +56,8 @@ def test_deal_timeline_includes_stage_changes(client, make):
     client.post(f"/api/deals/{deal}/move", json={"stage": "proposal", "index": 0})
     client.patch(f"/api/deals/{deal}", json={"stage": "won"})
     assert [e["description"] for e in client.get(f"/api/deals/{deal}/timeline").json()] == [
-        "Moved from Proposal to Won", "Moved from New to Proposal", "call notes"]
+        "Moved from Proposal to Won",
+        "Moved from New to Proposal",
+        "call notes",
+    ]
     assert client.get("/api/deals/999/timeline").status_code == 404

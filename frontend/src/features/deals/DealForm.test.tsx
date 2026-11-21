@@ -13,17 +13,41 @@ const stages = [
   { key: 'won', label: 'Won', probability: 100, open: false },
   { key: 'lost', label: 'Lost', probability: 0, open: false },
 ]
-const person = (id: number, name: string, organization_id: number | null, organization_name: string | null): ContactRow => ({
-  id, name, first_name: name.split(' ')[0], last_name: name.split(' ')[1], email: null, phone: null, job_title: null, organization_id, organization_name, status: 'lead',
+const person = (
+  id: number,
+  name: string,
+  organization_id: number | null,
+  organization_name: string | null,
+): ContactRow => ({
+  id,
+  name,
+  first_name: name.split(' ')[0],
+  last_name: name.split(' ')[1],
+  email: null,
+  phone: null,
+  job_title: null,
+  organization_id,
+  organization_name,
+  status: 'lead',
 })
-const contacts = [person(1, 'Ada Lane', 2, 'Northwind'), person(2, 'Ben Okafor', 1, 'Acme'), person(3, 'Cy Reyes', null, null), person(4, 'Dee Petrov', 1, 'Acme')]
+const contacts = [
+  person(1, 'Ada Lane', 2, 'Northwind'),
+  person(2, 'Ben Okafor', 1, 'Acme'),
+  person(3, 'Cy Reyes', null, null),
+  person(4, 'Dee Petrov', 1, 'Acme'),
+]
 const orgs = [
   { id: 1, name: 'Acme', industry: null, website: null, contact_count: 2, open_deal_count: 0, open_value: 0 },
   { id: 2, name: 'Northwind', industry: null, website: null, contact_count: 1, open_deal_count: 0, open_value: 0 },
 ]
 
 function routes(extra = {}) {
-  return mockApi({ 'GET /pipeline': { stages, columns: [], totals: {} }, 'GET /organizations': orgs, 'GET /contacts': contacts, ...extra })
+  return mockApi({
+    'GET /pipeline': { stages, columns: [], totals: {} },
+    'GET /organizations': orgs,
+    'GET /contacts': contacts,
+    ...extra,
+  })
 }
 
 async function chooseStage(user: ReturnType<typeof userEvent.setup>, label: string) {
@@ -71,28 +95,48 @@ describe('DealForm', () => {
     await user.click(screen.getByRole('button', { name: 'Add deal' }))
     await waitFor(() => expect(onSaved).toHaveBeenCalled())
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({
-      name: 'Fleet pilot', organization_id: null, contact_id: null, stage: 'proposal', value: 45000, probability: 55, close_date: '2026-12-31',
+      name: 'Fleet pilot',
+      organization_id: null,
+      contact_id: null,
+      stage: 'proposal',
+      value: 45000,
+      probability: 55,
+      close_date: '2026-12-31',
     })
   })
 
-  it('[R24] starts at the column\'s stage and probability when added from the board', async () => {
+  it("[R24] starts at the column's stage and probability when added from the board", async () => {
     routes()
     renderWithProviders(<DealForm defaults={{ stage: 'negotiation' }} lockStage onSaved={vi.fn()} onCancel={vi.fn()} />)
     await waitFor(() => expect(screen.getByLabelText('Probability (%)')).toHaveValue('71'))
     expect(screen.getByRole('combobox', { name: 'Stage' })).toBeDisabled()
   })
 
-  it('[K11] the contact picker lists the organization\'s contacts first, then everyone else', async () => {
+  it("[K11] the contact picker lists the organization's contacts first, then everyone else", async () => {
     expect(contactOptions(contacts, 1).map((o) => [o.label, o.group])).toEqual([
-      ['Ben Okafor', 'At Acme'], ['Dee Petrov', 'At Acme'], ['Ada Lane', 'Everyone else'], ['Cy Reyes', 'Everyone else'],
+      ['Ben Okafor', 'At Acme'],
+      ['Dee Petrov', 'At Acme'],
+      ['Ada Lane', 'Everyone else'],
+      ['Cy Reyes', 'Everyone else'],
     ])
-    expect(contactOptions(contacts, null).map((o) => o.label)).toEqual(['Ada Lane', 'Ben Okafor', 'Cy Reyes', 'Dee Petrov'])
+    expect(contactOptions(contacts, null).map((o) => o.label)).toEqual([
+      'Ada Lane',
+      'Ben Okafor',
+      'Cy Reyes',
+      'Dee Petrov',
+    ])
 
     routes()
     renderWithProviders(<DealForm defaults={{ organization_id: 1 }} onSaved={vi.fn()} onCancel={vi.fn()} />)
     const user = userEvent.setup()
     await user.click(screen.getByRole('combobox', { name: /Main contact/ }))
     const options = await screen.findAllByRole('option')
-    expect(options.map((o) => o.textContent)).toEqual(['No main contact', 'Ben OkaforAcme', 'Dee PetrovAcme', 'Ada LaneNorthwind', 'Cy Reyes'])
+    expect(options.map((o) => o.textContent)).toEqual([
+      'No main contact',
+      'Ben OkaforAcme',
+      'Dee PetrovAcme',
+      'Ada LaneNorthwind',
+      'Cy Reyes',
+    ])
   })
 })

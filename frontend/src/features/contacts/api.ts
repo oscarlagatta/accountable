@@ -48,7 +48,11 @@ export function useContacts() {
 }
 
 export function useContact(id: number) {
-  return useQuery({ queryKey: contactKeys.one(id), queryFn: () => api.get<Contact>(`/contacts/${id}`), enabled: !isDeleted('contacts', id) })
+  return useQuery({
+    queryKey: contactKeys.one(id),
+    queryFn: () => api.get<Contact>(`/contacts/${id}`),
+    enabled: !isDeleted('contacts', id),
+  })
 }
 
 export function useSaveContact() {

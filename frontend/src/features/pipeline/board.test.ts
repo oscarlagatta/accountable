@@ -18,8 +18,19 @@ const STAGES = [
 
 function deal(id: number, stage: Deal['stage'], value: number, probability: number): Deal {
   return {
-    id, name: `Deal ${id}`, organization_id: null, organization_name: null, contact_id: null, contact_name: null, stage, value, probability,
-    expected_revenue: Math.floor((value * probability + 50) / 100), close_date: '2027-01-31', late: false, position: 0,
+    id,
+    name: `Deal ${id}`,
+    organization_id: null,
+    organization_name: null,
+    contact_id: null,
+    contact_name: null,
+    stage,
+    value,
+    probability,
+    expected_revenue: Math.floor((value * probability + 50) / 100),
+    close_date: '2027-01-31',
+    late: false,
+    position: 0,
   }
 }
 
@@ -34,14 +45,26 @@ function board(): Pipeline {
   }
   const columns = STAGES.map((s) => {
     const deals = byStage[s.key].map((d, i) => ({ ...d, position: i }))
-    return { stage: s.key, label: s.label, probability: s.probability, open: s.open, deals, count: deals.length,
-      total: deals.reduce((t, d) => t + d.value, 0), expected: deals.reduce((t, d) => t + d.expected_revenue, 0) }
+    return {
+      stage: s.key,
+      label: s.label,
+      probability: s.probability,
+      open: s.open,
+      deals,
+      count: deals.length,
+      total: deals.reduce((t, d) => t + d.value, 0),
+      expected: deals.reduce((t, d) => t + d.expected_revenue, 0),
+    }
   })
   const open = columns.filter((c) => c.open)
   return {
     stages: STAGES.map((s) => ({ ...s })),
     columns,
-    totals: { open_count: open.reduce((t, c) => t + c.count, 0), open_value: open.reduce((t, c) => t + c.total, 0), open_expected: open.reduce((t, c) => t + c.expected, 0) },
+    totals: {
+      open_count: open.reduce((t, c) => t + c.count, 0),
+      open_value: open.reduce((t, c) => t + c.total, 0),
+      open_expected: open.reduce((t, c) => t + c.expected, 0),
+    },
   }
 }
 
@@ -73,14 +96,20 @@ describe('moving a card on the board', () => {
 
   it('[R27] a move within a column changes only the order', () => {
     const after = moveCard(board(), 1, 'new', 1)
-    expect(col(after, 'new').deals.map((d) => [d.id, d.position])).toEqual([[2, 0], [1, 1]])
+    expect(col(after, 'new').deals.map((d) => [d.id, d.position])).toEqual([
+      [2, 0],
+      [1, 1],
+    ])
     expect(col(after, 'new').deals[1].probability).toBe(5)
     expect(after.totals).toEqual(board().totals)
   })
 
   it('[R32] rolls the board back and says so when the server fails', async () => {
     mockApi({
-      'POST /deals/1/move': () => new Promise((r) => setTimeout(() => r(new Response(JSON.stringify({ detail: 'Database is locked' }), { status: 500 })), 150)),
+      'POST /deals/1/move': () =>
+        new Promise((r) =>
+          setTimeout(() => r(new Response(JSON.stringify({ detail: 'Database is locked' }), { status: 500 })), 150),
+        ),
       'GET /pipeline': board(),
     })
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -95,5 +124,41 @@ describe('moving a card on the board', () => {
     expect(col(back, 'proposal').count).toBe(0)
     expect(col(back, 'new').deals.map((d) => d.id)).toEqual([1, 2])
     expect(back.totals).toEqual(board().totals)
+  })
+
+  it('[R31] a deal moved back to an open column keeps its close date and is late if that date has passed', () => {
+    const after = moveCard(board(), 5, 'negotiation', 0, '2027-02-15')
+    expect(col(after, 'negotiation').deals[0]).toMatchObject({ id: 5, close_date: '2027-01-31', late: true })
+    const onTime = moveCard(board(), 5, 'negotiation', 0, '2027-01-15')
+    expect(col(onTime, 'negotiation').deals[0].late).toBe(false)
+  })
+
+  it('an index past the end of the column puts the card last', () => {
+    const after = moveCard(board(), 3, 'new', 99)
+    expect(col(after, 'new').deals.map((d) => d.id)).toEqual([1, 2, 3])
+  })
+
+  it('leaves the board alone for a deal that is not on it, and refuses an unknown stage', () => {
+    const before = board()
+    expect(moveCard(before, 404, 'won', 0)).toBe(before)
+    expect(() => moveCard(before, 1, 'archived' as Deal['stage'], 0)).toThrow('Unknown stage: archived')
+  })
+
+  it('[R32] still saves the move when the board is not loaded yet, and leaves the cache empty on failure', async () => {
+    const { calls } = mockApi({
+      'POST /deals/1/move': new Response(JSON.stringify({ detail: 'Database is locked' }), { status: 500 }),
+      'GET /pipeline': board(),
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client }, children)
+    const { result } = renderHook(() => useMoveDeal(), { wrapper })
+
+    act(() => result.current.move({ dealId: 1, stage: 'proposal', index: 0 }))
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(calls.find((c) => c.method === 'POST')).toMatchObject({
+      path: '/deals/1/move',
+      body: { stage: 'proposal', index: 0 },
+    })
+    expect(client.getQueryData(pipelineKey)).toBeUndefined()
   })
 })

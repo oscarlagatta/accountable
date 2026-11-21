@@ -24,7 +24,9 @@ const LIMIT_MS = 200
 
 describe('DataTable at scale', () => {
   it('[R14] renders 1,000 rows, and a search and a sort each finish within 200 ms', () => {
-    renderWithProviders(<DataTable data={data} columns={columns} noun="contacts" rowHref={(r) => `/contacts/${r.id}`} />)
+    renderWithProviders(
+      <DataTable data={data} columns={columns} noun="contacts" rowHref={(r) => `/contacts/${r.id}`} />,
+    )
     expect(screen.getAllByRole('row')).toHaveLength(1001)
 
     let start = performance.now()

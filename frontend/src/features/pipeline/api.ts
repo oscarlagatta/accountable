@@ -39,7 +39,8 @@ export type Move = { dealId: number; stage: StageKey; index: number }
 export function useMoveDeal() {
   const qc = useQueryClient()
   const mutation = useMutation({
-    mutationFn: ({ dealId, stage, index }: Move & { before?: Pipeline }) => api.post<Deal>(`/deals/${dealId}/move`, { stage, index }),
+    mutationFn: ({ dealId, stage, index }: Move & { before?: Pipeline }) =>
+      api.post<Deal>(`/deals/${dealId}/move`, { stage, index }),
     onError: (_err, { before }) => {
       if (before) qc.setQueryData(pipelineKey, before)
       toast.error("The move wasn't saved. The card is back where it was.")

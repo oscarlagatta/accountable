@@ -7,7 +7,13 @@ import { Money } from '@/components/Money'
 import { Page, PageHeader } from '@/components/PageHeader'
 import { RecordSheet } from '@/components/RecordSheet'
 import { Button } from '@/components/ui/button'
-import { organizationDeletePreview, useDeleteOrganization, useOrganization, useOrganizations, type OrganizationRow } from './api'
+import {
+  organizationDeletePreview,
+  useDeleteOrganization,
+  useOrganization,
+  useOrganizations,
+  type OrganizationRow,
+} from './api'
 import { OrganizationForm } from './OrganizationForm'
 
 export function organizationConsequences(p: { contacts: number; deals: number }) {
@@ -29,17 +35,31 @@ export function OrganizationsPage() {
     () => [
       { id: 'name', header: 'Name', value: (r) => r.name, cell: (r) => <span className="font-medium">{r.name}</span> },
       { id: 'industry', header: 'Industry', value: (r) => r.industry },
-      { id: 'website', header: 'Website', value: (r) => r.website?.replace(/^https?:\/\/(www\.)?/, ''), className: 'text-ink-muted' },
+      {
+        id: 'website',
+        header: 'Website',
+        value: (r) => r.website?.replace(/^https?:\/\/(www\.)?/, ''),
+        className: 'text-ink-muted',
+      },
       { id: 'contacts', header: 'Contacts', value: (r) => r.contact_count, numeric: true },
       { id: 'open_deals', header: 'Open deals', value: (r) => r.open_deal_count, numeric: true },
-      { id: 'open_value', header: 'Open value', value: (r) => r.open_value, numeric: true, cell: (r) => <Money value={r.open_value} /> },
+      {
+        id: 'open_value',
+        header: 'Open value',
+        value: (r) => r.open_value,
+        numeric: true,
+        cell: (r) => <Money value={r.open_value} />,
+      },
     ],
     [],
   )
 
   return (
     <Page>
-      <PageHeader title="Organizations" subtitle={orgs.data ? `${plural(orgs.data.length, 'company', 'companies')} we do business with` : 'Loading…'} />
+      <PageHeader
+        title="Organizations"
+        subtitle={orgs.data ? `${plural(orgs.data.length, 'company', 'companies')} we do business with` : 'Loading…'}
+      />
       {orgs.isError ? <p className="text-raspberry-ink">Couldn't load organizations.</p> : null}
       <DataTable
         data={orgs.data ?? []}
@@ -55,7 +75,11 @@ export function OrganizationsPage() {
           </Button>
         }
       />
-      <RecordSheet open={editing !== null} onOpenChange={(o) => !o && setEditing(null)} title={editing === 'new' ? 'Add organization' : 'Edit organization'}>
+      <RecordSheet
+        open={editing !== null}
+        onOpenChange={(o) => !o && setEditing(null)}
+        title={editing === 'new' ? 'Add organization' : 'Edit organization'}
+      >
         {editing !== null ? (
           editing === 'new' ? (
             <OrganizationForm

@@ -4,8 +4,19 @@ import { renderWithProviders } from '@/test/render'
 import { Card } from './Card'
 
 const deal: Deal = {
-  id: 7, name: 'Fleet tracking pilot', organization_id: 1, organization_name: 'Harbor Freight Lines', contact_id: 2, contact_name: 'Maya Okafor',
-  stage: 'new', value: 24000, probability: 5, expected_revenue: 1200, close_date: '2027-01-30', late: false, position: 0,
+  id: 7,
+  name: 'Fleet tracking pilot',
+  organization_id: 1,
+  organization_name: 'Harbor Freight Lines',
+  contact_id: 2,
+  contact_name: 'Maya Okafor',
+  stage: 'new',
+  value: 24000,
+  probability: 5,
+  expected_revenue: 1200,
+  close_date: '2027-01-30',
+  late: false,
+  position: 0,
 }
 
 describe('Card', () => {

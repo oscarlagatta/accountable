@@ -27,11 +27,25 @@ export function DealPage() {
   const [editing, setEditing] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  if (deal.error instanceof ApiError && deal.error.status === 404) return <NotFoundMessage what="Deal" back={{ to: '/deals', label: 'Back to deals' }} />
-  if (!deal.data) return <Page>{deal.isError ? <p className="text-raspberry-ink">Couldn't load this deal.</p> : <p className="text-ink-muted">Loading…</p>}</Page>
+  if (deal.error instanceof ApiError && deal.error.status === 404)
+    return <NotFoundMessage what="Deal" back={{ to: '/deals', label: 'Back to deals' }} />
+  if (!deal.data)
+    return (
+      <Page>
+        {deal.isError ? (
+          <p className="text-raspberry-ink">Couldn't load this deal.</p>
+        ) : (
+          <p className="text-ink-muted">Loading…</p>
+        )}
+      </Page>
+    )
   const d = deal.data
   const stageLabel = stages.data?.find((s) => s.key === d.stage)?.label
-  const org = d.organization_id ? <RecordLink to={`/organizations/${d.organization_id}`}>{d.organization_name}</RecordLink> : 'None'
+  const org = d.organization_id ? (
+    <RecordLink to={`/organizations/${d.organization_id}`}>{d.organization_name}</RecordLink>
+  ) : (
+    'None'
+  )
   const contact = d.contact_id ? <RecordLink to={`/contacts/${d.contact_id}`}>{d.contact_name}</RecordLink> : 'None'
 
   return (
