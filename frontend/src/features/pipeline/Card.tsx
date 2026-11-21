@@ -17,6 +17,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(function Card(
       <div
         ref={ref}
         {...rest}
+        data-testid="card-placeholder"
         className="mb-1.5 h-[74px] rounded-md border-2 border-dashed border-ink-faint"
         aria-hidden
       />

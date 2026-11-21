@@ -22,6 +22,29 @@ async function drag(page: Page, from: Locator, to: Locator, where: 'top' | 'cent
   await page.mouse.up()
 }
 
+/** dnd-kit's screen reader announcements for the board. */
+const dragStatus = (page: Page) => page.getByRole('status').filter({ hasText: /draggable item/i })
+
+/**
+ * Moves a card with the keyboard: Space, one arrow key, Space, and drops it once `landed` shows.
+ * dnd-kit's KeyboardSensor starts listening for arrow keys in a setTimeout after the drag starts,
+ * and Chrome can handle a key press before that timer, so an arrow sent straight away can be lost
+ * on a busy machine. This waits for the drag to be announced and one page timer tick first.
+ */
+async function keyboardMove(page: Page, from: Locator, key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight', landed: Locator) {
+  const id = await from.getAttribute('data-deal-id')
+  await from.focus()
+  await page.keyboard.press('Space')
+  // At pick-up the card is over its own place, so dnd-kit may announce either line.
+  await expect(dragStatus(page)).toHaveText(
+    new RegExp(`^(Picked up draggable item ${id}|Draggable item ${id} was moved over droppable area ${id})\\.$`),
+  )
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve)))
+  await page.keyboard.press(key)
+  await expect(landed).toBeVisible()
+  await page.keyboard.press('Space')
+}
+
 async function addDealIn(page: Page, label: string, name: string, value: string) {
   await column(page, label).getByRole('button', { name: '+ Add deal' }).click()
   await expect(sheet(page).getByRole('combobox', { name: 'Stage' })).toHaveText(label)
@@ -101,19 +124,12 @@ test('[R35, C4] dragging works with the keyboard: Space, arrows, Space', async (
   const names = [unique('Key A'), unique('Key B')]
   for (const n of [...names].reverse()) await api(request, 'post', '/deals', { name: n, value: 1000, stage: 'proposal', close_date: '2027-05-01' })
   await page.goto('/pipeline')
-  await card(page, names[0]).focus()
-  await page.keyboard.press('Space')
-  await page.keyboard.press('ArrowDown')
-  await page.waitForTimeout(200)
-  await page.keyboard.press('Space')
+  const [a, b] = await Promise.all(names.map((n) => card(page, n).getAttribute('data-deal-id')))
+  await keyboardMove(page, card(page, names[0]), 'ArrowDown', dragStatus(page).filter({ hasText: `Draggable item ${a} was moved over droppable area ${b}.` }))
   await expect.poll(async () => (await cardNames(column(page, 'Proposal'))).slice(0, 2)).toEqual([names[1], names[0]])
 
   // Across columns: right arrow moves it to Negotiation.
-  await card(page, names[0]).focus()
-  await page.keyboard.press('Space')
-  await page.keyboard.press('ArrowRight')
-  await page.waitForTimeout(200)
-  await page.keyboard.press('Space')
+  await keyboardMove(page, card(page, names[0]), 'ArrowRight', column(page, 'Negotiation').getByTestId('card-placeholder'))
   await expect(column(page, 'Negotiation').getByRole('link', { name: names[0], exact: true })).toBeVisible()
   await page.waitForLoadState('networkidle')
   await page.reload()

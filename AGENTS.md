@@ -14,6 +14,8 @@ When a change is built, update `docs/spec.md` so it describes the product with t
 
 Update `docs/STATUS.md` when you finish a piece of work
 
+At Deploy, after the review fixes and before the merge, follow `docs/IMPROVE.md`.
+
 ## Checks
 
 Run `npm run check` before calling any work done; it must exit 0. It runs every check below, keeps going after a failure, and ends with a PASS/FAIL summary:
