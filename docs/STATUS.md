@@ -48,7 +48,7 @@ A lefthook pre-commit hook (format, lint, types, gitleaks), and two agent hooks:
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every push to any branch: gitleaks first, then `npm run check`. If it fails, the Playwright report is uploaded. It hasn't run on GitHub yet.
+`.github/workflows/ci.yml` runs on every push to any branch: gitleaks first, then `npm run check:quick`. It leaves out the end-to-end tests, so run `npm run check` locally for those. It hasn't run on GitHub yet.
 
 ## Next
 
